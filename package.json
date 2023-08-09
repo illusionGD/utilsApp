@@ -15,9 +15,11 @@
     },
     "devDependencies": {
         "@vitejs/plugin-vue": "^4.1.0",
+        "autoprefixer": "^10.4.14",
         "cz-conventional-changelog": "^3.3.0",
         "electron": "^24.4.0",
         "electron-builder": "^23.6.0",
+        "postcss-pxtorem": "^6.0.0",
         "sass": "^1.64.2",
         "typescript": "^5.0.2",
         "unplugin-auto-import": "^0.16.6",

@@ -1,7 +1,9 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
 import vue from '@vitejs/plugin-vue'
+import autoprefixer from 'autoprefixer'
+import pxtorem from 'postcss-pxtorem'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
@@ -32,11 +34,32 @@ export default defineConfig({
             resolvers: [ElementPlusResolver()],
         }),
     ],
+    resolve: {
+        alias: {
+            '@': '/src',
+            '~': '/public',
+        },
+    },
     css: {
+        postcss: {
+            plugins: [
+                pxtorem({
+                    rootValue: 19.2,
+                    propList: ['*'],
+                    replace: true,
+                    mediaQuery: false,
+                    minPixelValue: 3,
+                    exclude: /node_modules/i,
+                }),
+                autoprefixer({
+                    grid: true,
+                }),
+            ],
+        },
         preprocessorOptions: {
             scss: {
                 implementation: sass,
-                additionalData: `@import "./src/assets/scss/global.scss";`,
+                additionalData: '@import "@/assets/css/global.scss";',
             },
         },
     },
