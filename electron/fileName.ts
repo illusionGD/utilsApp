@@ -57,7 +57,6 @@ export function modifySingleFileName(path: string, newPath: string) {
         const { ext: oldExt } = parse(path)
         const { ext: newExt } = parse(newPath)
         const renamePath = newExt ? newPath : newPath + oldExt
-        console.log('🚀 ~ file: fileName.ts:49 ~ renamePath:', renamePath)
         rename(path, renamePath, (err: any) => {
             if (err) {
                 reject(err)

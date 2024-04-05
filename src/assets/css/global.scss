@@ -1,3 +1,13 @@
+:root {
+    --theme-bg-color: #000;
+    --theme-text-color: #fff;
+    --theme-active-color: #16ff9a;
+}
+
+$GlobalThemeColor: var(--theme-bg-color);
+$GlobalTextColor: var(--theme-text-color);
+$GlobalActiveColor: var(--theme-active-color);
+
 .flex-center {
     display: flex;
     justify-content: center;
@@ -13,9 +23,26 @@
     flex-direction: column;
 }
 
+.flex-colum-start {
+    @extend .flex-colum-center;
+    justify-content: flex-start;
+}
+
 .p-ab-center {
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(50%, 50%);
 }
+
+.bg-contain {
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+.bg-cover {
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+@mixin f-c-c() {}

@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'node:path'
-import { batchRenameFilesInDirectory } from './fileName'
+import { batchRenameFilesInDirectory, modifySingleFileName } from './fileName'
 
 // The built directory structure
 //
@@ -19,6 +19,29 @@ process.env.PUBLIC = app.isPackaged
 let win: BrowserWindow | null
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
+
+app.whenReady().then(() => {
+    ipcMain.handle(
+        'batchRenameFilesInDirectory',
+        async (event: any, filePath: string, newName: string) => {
+            await batchRenameFilesInDirectory(filePath, newName)
+            return true
+        }
+    )
+
+    ipcMain.handle(
+        'modifySingleFileName',
+        async (event: any, filePath: string, newName: string) => {
+            await modifySingleFileName(filePath, newName)
+            return true
+        }
+    )
+    createWindow()
+})
+
+app.on('window-all-closed', () => {
+    win = null
+})
 
 function createWindow() {
     win = new BrowserWindow({
@@ -47,21 +70,3 @@ function createWindow() {
         win.loadFile(path.join(process.env.DIST, 'index.html'))
     }
 }
-
-app.on('window-all-closed', () => {
-    win = null
-})
-
-app.whenReady().then(() => {
-    ipcMain.handle(
-        'batchRenameFilesInDirectory',
-        (event: any, filePath: string, newName: string) => {
-            console.log('🚀 ~ file: main.ts:59 ~ event:', event)
-            console.log('🚀 ~ file: main.ts:59 ~ newName:', newName)
-            console.log('🚀 ~ file: main.ts:59 ~ filePath:', filePath)
-            batchRenameFilesInDirectory(filePath, newName)
-            return true
-        }
-    )
-    createWindow()
-})

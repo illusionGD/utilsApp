@@ -4,7 +4,7 @@ const { contextBridge } = require('electron')
 
 const goldaList = [
     {
-        name: 'fileName',
+        name: 'FileNameModule',
         ping: {
             batchRenameFilesInDirectory: (filePath: string, newName: string) =>
                 ipcRenderer.invoke(
