@@ -1,4 +1,5 @@
 import { ipcRenderer } from 'electron'
+import { RenameFileConfigType } from '../src/types'
 
 const { contextBridge } = require('electron')
 
@@ -12,6 +13,11 @@ const goldaList = [
                     filePath,
                     newName
                 ),
+
+            batchRenameFiles: (
+                pathList: string[],
+                config: RenameFileConfigType
+            ) => ipcRenderer.invoke('batchRenameFiles', pathList, config),
         },
     },
 ]

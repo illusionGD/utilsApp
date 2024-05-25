@@ -29,6 +29,9 @@ body {
 .main-content {
     // width: 100%;
     flex: 1;
-    height: 100%;
+    box-sizing: border-box;
+    min-height: 100vh;
+    overflow-y: auto;
+    padding: 10px;
 }
 </style>

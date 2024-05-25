@@ -1,3 +1,5 @@
+@use 'element-plus/theme-chalk/dark/css-vars.css';
+
 :root {
     --theme-bg-color: #000;
     --theme-text-color: #fff;
@@ -7,6 +9,10 @@
 $GlobalThemeColor: var(--theme-bg-color);
 $GlobalTextColor: var(--theme-text-color);
 $GlobalActiveColor: var(--theme-active-color);
+
+html.dark {
+    --el-color-primary: #16ff9a;
+}
 
 .flex-center {
     display: flex;
@@ -32,7 +38,7 @@ $GlobalActiveColor: var(--theme-active-color);
     position: absolute;
     left: 50%;
     top: 50%;
-    transform: translate(50%, 50%);
+    transform: translate(-50%, -50%);
 }
 
 .bg-contain {
@@ -43,6 +49,14 @@ $GlobalActiveColor: var(--theme-active-color);
 .bg-cover {
     background-repeat: no-repeat;
     background-size: cover;
+}
+
+.m-r-10 {
+    margin-right: 10px;
+}
+
+.m-l-10 {
+    margin-left: 10px;
 }
 
 @mixin f-c-c() {}

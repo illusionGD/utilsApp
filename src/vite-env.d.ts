@@ -1,4 +1,6 @@
 /// <reference types="vite/client" />
+/// <reference types="./types/index" />
+
 declare module '*.vue' {
     import { ComponentOptions } from 'vue'
     const componentOptions: ComponentOptions
@@ -26,5 +28,14 @@ interface Window {
          * @param {string} newPath
          */
         modifySingleFileName: (path: string, newPath: string) => void
+        /**
+         * 批量修改文件名
+         * @param pathList
+         * @param config
+         */
+        batchRenameFiles: (
+            pathList: string[],
+            config: RenameFileConfigType
+        ) => void
     }
 }

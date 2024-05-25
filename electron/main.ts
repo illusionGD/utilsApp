@@ -1,6 +1,11 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'node:path'
-import { batchRenameFilesInDirectory, modifySingleFileName } from './fileName'
+import { RenameFileConfigType } from '../src/types'
+import {
+    batchRenameFiles,
+    batchRenameFilesInDirectory,
+    modifySingleFileName,
+} from './fileName'
 
 // The built directory structure
 //
@@ -30,9 +35,13 @@ app.whenReady().then(() => {
     )
 
     ipcMain.handle(
-        'modifySingleFileName',
-        async (event: any, filePath: string, newName: string) => {
-            await modifySingleFileName(filePath, newName)
+        'batchRenameFiles',
+        async (
+            event: any,
+            pathList: string[],
+            config: RenameFileConfigType
+        ) => {
+            await batchRenameFiles(pathList, config)
             return true
         }
     )

@@ -3,7 +3,6 @@
         <el-menu
             class="menu-list"
             text-color="#fff"
-            background-color="#545c64"
             @open="handleOpen"
             @close="handleClose"
         >
