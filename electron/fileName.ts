@@ -15,15 +15,21 @@ export async function batchRenameFilesInDirectory(
     preFix?: FileFixEnum | '',
     sufFix?: FileFixEnum | ''
 ) {
-    const en = 'abcdefghijklmnopqrstuvwxyz'
-    const enLen = en.length
     const getEnStr = (index: number) => {
-        let str = en[index]
-        while (!en[index]) {
-            str += en[index % enLen]
+        const enLen = 26
+        if (enLen <= index) {
+            let str = ''
+            const num = Math.ceil(index / enLen)
+            for (let i = 0; i < num; i++) {
+                str += String.fromCharCode((i % 26) + 97)
+            }
+            str += String.fromCharCode((index % 26) + 97)
+            return str
         }
-        return str
+
+        return String.fromCharCode((index % 26) + 97)
     }
+
     let _prefix = ''
     let _suffix = ''
     preFix && (preFix === FileFixEnum.NUMBER ? '0' : 'a')
@@ -44,7 +50,16 @@ export async function batchRenameFilesInDirectory(
         if (!files) {
             return
         }
+        const jobList = []
+        const fileNames: string[] = []
+        const newFileNames: string[] = []
+
+        // 收集文件名
         for (let i = 0; i < files.length; i++) {
+            const file = files[i]
+            const filePath = join(directoryPath, file)
+            const isDir = await isDirectory(filePath)
+            const { ext: oldExt } = parse(filePath)
             if (preFix === FileFixEnum.NUMBER) {
                 _prefix = `${i}`
             } else if (preFix === FileFixEnum.ENGLISH) {
@@ -56,21 +71,73 @@ export async function batchRenameFilesInDirectory(
             } else if (sufFix === FileFixEnum.ENGLISH) {
                 _suffix = getEnStr(i)
             }
-            const file = files[i]
-            const filePath = join(directoryPath, file)
-            const isDir = await isDirectory(filePath)
+
+            let newFilePath = join(directoryPath, _prefix + newName + _suffix)
+            const { ext: newExt } = parse(newFilePath)
+            if (!newExt) {
+                newFilePath += oldExt
+            }
+            fileNames.push(filePath)
+            newFileNames.push(newFilePath)
 
             if (isDir) {
                 await batchRenameFilesInDirectory(filePath, newName)
-            } else {
-                const newFilePath = join(
-                    directoryPath,
-                    _prefix + newName + _suffix
-                )
-
-                await modifySingleFileName(filePath, newFilePath)
             }
         }
+
+        const modifyOperate = async (
+            oldPaths: string[],
+            newPaths: string[],
+            jobList
+        ) => {
+            const notModifyNames = []
+            const hadModifyNames = []
+
+            for (let j = 0; j < oldPaths.length; j++) {
+                const filePath = oldPaths[j]
+                const isDir = await isDirectory(filePath)
+                const oldFilePath = oldPaths[j]
+
+                const newFilePath = newPaths[j]
+
+                // 如果是文件夹则跳过
+                if (isDir) {
+                    continue
+                }
+
+                const hadIndex = oldPaths.findIndex(
+                    (name) => name === newFilePath
+                )
+
+                // 如果没有改名则跳过
+                if (hadIndex === j) {
+                    hadModifyNames.push(newFilePath)
+                    continue
+                }
+
+                // 如果有同名文件，后面再更改
+                if (hadIndex >= 0) {
+                    notModifyNames.push(oldFilePath)
+                    continue
+                }
+                hadModifyNames.push(newFilePath)
+                jobList.push(modifySingleFileName(oldFilePath, newFilePath))
+            }
+
+            await Promise.all(jobList)
+
+            // 剔除已修改的文件，如果有重名为修改的文件，递归执行
+            hadModifyNames.forEach((name) => {
+                const index = newPaths.findIndex((oldName) => oldName === name)
+                index >= 0 && newPaths.splice(index, 1)
+            })
+
+            if (notModifyNames.length) {
+                await modifyOperate(notModifyNames, [...newPaths], jobList)
+            }
+        }
+
+        await modifyOperate(fileNames, newFileNames, jobList)
     } catch (err) {
         console.error(err)
     }
@@ -108,11 +175,11 @@ export function modifySingleFileName(path: string, newPath: string) {
             if (err) {
                 reject(err)
             } else {
-                console.log(
-                    `${path}-已重命名文件：${getFileNameNotExt(
-                        path
-                    )} -> ${getFileNameNotExt(renamePath)}`
-                )
+                // console.log(
+                //     `${path}-已重命名文件：${getFileNameNotExt(
+                //         path
+                //     )} -> ${getFileNameNotExt(renamePath)}`
+                // )
                 resolve(true)
             }
         })
