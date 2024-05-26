@@ -50,7 +50,6 @@ export async function batchRenameFilesInDirectory(
         if (!files) {
             return
         }
-        const jobList = []
         const fileNames: string[] = []
         const newFileNames: string[] = []
 
@@ -87,9 +86,9 @@ export async function batchRenameFilesInDirectory(
 
         const modifyOperate = async (
             oldPaths: string[],
-            newPaths: string[],
-            jobList
+            newPaths: string[]
         ) => {
+            const jobList = []
             const notModifyNames = []
             const hadModifyNames = []
 
@@ -133,11 +132,11 @@ export async function batchRenameFilesInDirectory(
             })
 
             if (notModifyNames.length) {
-                await modifyOperate(notModifyNames, [...newPaths], jobList)
+                await modifyOperate(notModifyNames, [...newPaths])
             }
         }
 
-        await modifyOperate(fileNames, newFileNames, jobList)
+        await modifyOperate(fileNames, newFileNames)
     } catch (err) {
         console.error(err)
     }
