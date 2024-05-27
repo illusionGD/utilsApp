@@ -20,6 +20,10 @@ const goldaList = [
             ) => ipcRenderer.invoke('batchRenameFiles', pathList, config),
         },
     },
+    {
+        name: 'HandleImageModule',
+        ping: {},
+    },
 ]
 
 goldaList.forEach((item) => {

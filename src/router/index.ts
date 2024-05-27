@@ -1,11 +1,18 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import { EditPen } from '@element-plus/icons-vue'
+import { EditPen, Picture } from '@element-plus/icons-vue'
+import { shallowRef } from 'vue'
 export const menuRoutes = [
     {
         path: '/utils/fileNme',
         title: '修改文件名',
-        Icon: EditPen,
+        Icon: shallowRef(EditPen),
         component: () => import('../views/fileName.vue'),
+    },
+    {
+        path: '/utils/handleImage',
+        title: '图片处理',
+        Icon: shallowRef(Picture),
+        component: () => import('../views/handleImage.vue'),
     },
 ]
 const routes = [

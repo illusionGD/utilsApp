@@ -66,7 +66,7 @@ export default defineConfig({
     build: {
         sourcemap: false,
         rollupOptions: {
-            external: ['electron'],
+            external: ['electron', 'sharp'],
             output: {
                 globals: {
                     electron: 'electron',

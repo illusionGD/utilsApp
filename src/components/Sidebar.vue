@@ -67,11 +67,15 @@ function handleClose() {}
     background-image: url('../assets/images/总体.png');
 }
 .menu-list {
+    font-weight: bold;
     background-color: $GlobalThemeColor;
     color: $GlobalTextColor;
 }
 .el-menu-item.is-active {
     color: $GlobalActiveColor;
+}
+.el-menu {
+    border: none;
 }
 
 a {
