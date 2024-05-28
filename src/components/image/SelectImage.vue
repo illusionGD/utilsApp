@@ -2,19 +2,24 @@
     <div class="select-image">
         <div class="preview-list">
             <div
-                class="img-item m-r-10"
+                class="img-item m-r-10 b-s-box"
                 v-for="(item, index) in files"
-                :key="index"
+                :key="item.name"
                 @mouseenter="showMark(index)"
                 @mouseleave="hideMark(index)"
+                @click.stop="onSelectChange(index)"
             >
-                <img :src="imgSrcList[index]" :alt="item.name" />
+                <img
+                    :class="{ 'img-item-active': selectIndex === index }"
+                    :src="imgSrcList[index]"
+                    :alt="item.name"
+                />
                 <div class="mark flex-center" v-show="markList[index]">
                     <el-icon class="mark-btn" size="large"><View /></el-icon>
                     <el-icon
                         class="mark-btn"
                         size="large"
-                        @click="deleteImg(index)"
+                        @click.stop="deleteImg(index)"
                         ><Delete
                     /></el-icon>
                 </div>
@@ -40,10 +45,11 @@ import { Plus, Delete, View } from '@element-plus/icons-vue'
 const props = defineProps<{
     isDir: boolean
 }>()
-const emits = defineEmits(['onChange'])
+const emits = defineEmits(['onChange', 'onSelectChange'])
 const files = ref<File[]>([])
 const markList = ref<boolean[]>([])
 const imgSrcList = ref<string[]>([])
+const selectIndex = ref(0)
 
 function showMark(index) {
     markList.value[index] = true
@@ -54,7 +60,9 @@ function hideMark(index) {
 function deleteImg(index) {
     files.value.splice(index, 1)
     imgSrcList.value.splice(index, 1)
-    emits('onChange', files)
+    emits('onChange', files.value)
+    selectIndex.value = selectIndex.value ? selectIndex.value - 1 : 0
+    onSelectChange(selectIndex.value)
 }
 function onChange(e) {
     const fileList = e.target.files as FileList
@@ -65,7 +73,13 @@ function onChange(e) {
         markList[index] = false
     }
 
-    emits('onChange', files)
+    emits('onChange', files.value)
+    onSelectChange(selectIndex.value)
+}
+
+function onSelectChange(index: number) {
+    selectIndex.value = index
+    emits('onSelectChange', selectIndex.value)
 }
 </script>
 
@@ -92,6 +106,7 @@ function onChange(e) {
     position: relative;
 
     img {
+        @extend .w-h-100-percent;
         @extend .file-box;
         object-fit: cover;
     }
@@ -110,6 +125,10 @@ function onChange(e) {
             margin: 0;
         }
     }
+}
+
+.img-item-active {
+    border: 1px solid $GlobalActiveColor;
 }
 .input-file {
     width: 100%;
