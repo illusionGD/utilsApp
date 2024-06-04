@@ -36,5 +36,8 @@
             "path": "./node_modules/cz-conventional-changelog"
         }
     },
-    "main": "dist-electron/main.js"
+    "main": "dist-electron/main.js",
+    "optionalDependencies": {
+        "@img/sharp-win32-x64": "^0.33.4"
+    }
 }

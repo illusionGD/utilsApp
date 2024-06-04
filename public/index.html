@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <img
+            class="img-demo"
+            src="./0c59cc53ee6c1e81a45b95d91f1a4982ba48468b.jpg"
+            alt=""
+        />
+        <img class="img-res" src="" alt="" />
+        <canvas class="test-c"></canvas>
+    </body>
+    <script>
+        const img = document.createElement('img')
+        const demo = document.querySelector('.img-demo')
+        const res = document.querySelector('.img-res')
+        const c = document.querySelector('.test-c')
+        console.log('🚀 ~ c:', c)
+        res.onload = () => {
+            c.getContext('2d').drawImage(res, 0, 0)
+        }
+        demo.onload = () => {
+            let rate = 0.2
+            setInterval(() => {
+                rate += 0.1
+                const canvas = document.createElement('canvas')
+                canvas.width = demo.width
+                canvas.height = demo.height
+                const cxt = canvas.getContext('2d')
+                cxt.drawImage(demo, 0, 0)
+                res.src = canvas.toDataURL('image/jpeg', rate)
+                console.log('🚀 ~ res.src:', res.src)
+                c.width = res.width
+                c.height = res.height
+            }, 1000)
+        }
+    </script>
+</html>

@@ -6,16 +6,8 @@ import {
     batchRenameFilesInDirectory,
     modifySingleFileName,
 } from './fileName'
+import { pressImageByBuffer } from './handleImage'
 
-// The built directory structure
-//
-// ├─┬─┬ dist
-// │ │ └── index.html
-// │ │
-// │ ├─┬ dist-electron
-// │ │ ├── main.js
-// │ │ └── preload.js
-// │
 process.env.DIST = path.join(__dirname, '../dist')
 process.env.PUBLIC = app.isPackaged
     ? process.env.DIST
@@ -45,6 +37,14 @@ app.whenReady().then(() => {
             return true
         }
     )
+
+    ipcMain.handle(
+        'pressImageByBuffer',
+        async (event: any, buffer: string, type: string, quality: number) => {
+            return await pressImageByBuffer(buffer, type, quality)
+        }
+    )
+
     createWindow()
 })
 
