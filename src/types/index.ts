@@ -20,3 +20,10 @@ export enum FileFixEnum {
     NUMBER = 'number',
     ENGLISH = 'english',
 }
+
+export enum ImgTypeEnum {
+    jpeg = 'jpeg',
+    png = 'png',
+    webp = 'webp',
+    gif = 'gif',
+}

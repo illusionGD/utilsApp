@@ -28,4 +28,7 @@ declare module 'vue' {
     SelectImage: typeof import('./src/components/image/SelectImage.vue')['default']
     Sidebar: typeof import('./src/components/Sidebar.vue')['default']
   }
+  export interface ComponentCustomProperties {
+    vLoading: typeof import('element-plus/es')['ElLoadingDirective']
+  }
 }

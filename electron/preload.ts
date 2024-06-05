@@ -22,7 +22,14 @@ const goldaList = [
     },
     {
         name: 'HandleImageModule',
-        ping: {},
+        ping: {
+            pressImageByBase64: (
+                buffer: string,
+                type: string,
+                quality: number
+            ) =>
+                ipcRenderer.invoke('pressImageByBase64', buffer, type, quality),
+        },
     },
 ]
 

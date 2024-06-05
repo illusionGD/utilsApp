@@ -22,12 +22,7 @@ interface Window {
             preFix: string = '',
             sufFix: string = ''
         ) => void
-        /**
-         * @description: 修改单个文件名
-         * @param {string} path
-         * @param {string} newPath
-         */
-        modifySingleFileName: (path: string, newPath: string) => void
+
         /**
          * 批量修改文件名
          * @param pathList
@@ -37,5 +32,12 @@ interface Window {
             pathList: string[],
             config: RenameFileConfigType
         ) => void
+    }
+    HandleImageModule: {
+        pressImageByBase64: (
+            base64: string,
+            type: ImgTypeEnum,
+            quality: number
+        ) => Promise<buffer>
     }
 }

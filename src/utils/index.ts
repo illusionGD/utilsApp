@@ -1,3 +1,5 @@
+import { ImgTypeEnum } from '../types'
+
 export function formatFilePath(path: string) {
     return path.replace(/\\/g, '/')
 }
@@ -17,4 +19,31 @@ export function getBase64Size(base64: string, imgType: string) {
         kb,
         mb,
     }
+}
+
+export function changeImgType(type: string): ImgTypeEnum | '' {
+    const method = {
+        jpg: 'jpeg',
+        jpeg: 'jpeg',
+        png: 'png',
+        webp: 'webp',
+        gif: 'gif',
+    }
+
+    for (const key in method) {
+        if (type.includes(key)) {
+            return method[key]
+        }
+    }
+
+    return ''
+}
+/**
+ * 限制数值的取值范围
+ * @param min 最小值
+ * @param max 最大值
+ * @param num 值
+ */
+export function mathClamp(min: number, max: number, num: number) {
+    return Math.min(Math.max(num, min), max)
 }

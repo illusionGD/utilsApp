@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'node:path'
-import { RenameFileConfigType } from '../src/types'
+import { ImgTypeEnum, RenameFileConfigType } from '../src/types'
 import {
     batchRenameFiles,
     batchRenameFilesInDirectory,
@@ -39,9 +39,19 @@ app.whenReady().then(() => {
     )
 
     ipcMain.handle(
-        'pressImageByBuffer',
-        async (event: any, buffer: string, type: string, quality: number) => {
-            return await pressImageByBuffer(buffer, type, quality)
+        'pressImageByBase64',
+        async (
+            event: any,
+            base64: string,
+            type: ImgTypeEnum,
+            quality: number
+        ) => {
+            const buffer = Buffer.from(
+                base64.replace(/^data:image\/\w+;base64,/, ''),
+                'base64'
+            )
+            const newBuffer = await pressImageByBuffer(buffer, type, quality)
+            return newBuffer
         }
     )
 
