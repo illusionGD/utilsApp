@@ -20,8 +20,9 @@
                     min="0.1"
                     placeholder="缩放倍率"
                     @change="drawCanvasImg"
-                ></el-input> </el-form-item
-            ><br />
+                ></el-input>
+            </el-form-item>
+            <br />
             <el-form-item label="输出位置">
                 <dir-select-input
                     v-model="pressConfig.outPath"
@@ -46,7 +47,7 @@
 
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
-import { changeImgType, getBase64Size } from '../utils'
+import { formatBytesSize, getBase64Size } from '../utils'
 
 const pressConfig = ref({
     scale: 1.0,
@@ -54,21 +55,17 @@ const pressConfig = ref({
     outPath: '',
 })
 const fileList = ref<File[]>([])
-const previewCanvas = ref<HTMLCanvasElement>()
 const readFile = new FileReader()
-const ctx = ref<CanvasRenderingContext2D>()
 const currentImgDom = ref<HTMLImageElement>()
 const currentFile = ref<File>()
 const previewImg = ref<HTMLImageElement>()
 const loadingMark = ref<HTMLElement>()
 const imgSize = ref({
-    kb: '0',
-    mb: '0',
+    kb: 0,
+    mb: 0,
 })
 const loading = ref(false)
 onMounted(() => {
-    previewCanvas.value = document.createElement('canvas')
-    ctx.value = previewCanvas.value.getContext('2d')
     readFile.addEventListener('load', (e) => {
         const imgDom = new Image()
         currentImgDom.value = imgDom
@@ -97,51 +94,44 @@ async function drawCanvasImg() {
     if (!currentImgDom.value || loading.value) {
         return
     }
-    const _width = currentImgDom.value.width * scale
-    const _height = currentImgDom.value.height * scale
+    const _width = Math.round(currentImgDom.value.width * scale)
+    const _height = Math.round(currentImgDom.value.height * scale)
     const imgType = currentFile.value.type
 
-    previewCanvas.value.width = _width
-    previewCanvas.value.height = _height
     previewImg.value.width = _width
     previewImg.value.height = _height
     loadingMark.value.style.width = _width + 'px'
     loadingMark.value.style.height = _height + 'px'
 
-    ctx.value.drawImage(currentImgDom.value, 0, 0, _width, _height)
-    const base64 = previewCanvas.value.toDataURL(imgType, rate)
-
-    if (rate >= 1) {
-        previewImg.value.src = base64
-        computedSize(previewImg.value.src, imgType)
-        return
-    }
     loading.value = true
-    const buffer = await window.HandleImageModule.pressImageByBase64(
-        base64,
-        changeImgType(imgType),
+
+    const buffer = await window.HandleImageModule.pressAndResizeImageByPath(
+        currentFile.value.path,
+        _width,
+        _height,
         rate
     )
+
     loading.value = false
 
     if (!buffer) {
         return
     }
+
     const blob = new Blob([buffer], { type: imgType })
     const url = URL.createObjectURL(blob)
-    const img = new Image()
-    img.src = url
-    img.onload = () => {
-        ctx.value.drawImage(img, 0, 0, _width, _height)
+    previewImg.value.src = url
+    previewImg.value.onload = () => {
         URL.revokeObjectURL(url) // 释放 URL 对象
-        const newBase64 = previewCanvas.value.toDataURL(imgType)
-        previewImg.value.src = newBase64
-        computedSize(previewImg.value.src, imgType)
+        computedSize(blob, imgType)
     }
 }
 
-function computedSize(base64: string, imgType) {
-    const size = getBase64Size(base64, imgType)
+function computedSize(data: Blob | string, imgType: string) {
+    const size =
+        data instanceof Blob
+            ? formatBytesSize(data.size)
+            : getBase64Size(data, imgType)
     imgSize.value.kb = size.kb
     imgSize.value.mb = size.mb
 }

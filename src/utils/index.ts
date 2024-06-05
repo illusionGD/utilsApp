@@ -12,13 +12,19 @@ export function getBase64Size(base64: string, imgType: string) {
     const sizeInBytes = realBase64Str.length * 0.75
 
     // 将文件大小转换为人类可读的格式
-    const kb = (sizeInBytes / 1024).toFixed(2)
-    const mb = (sizeInBytes / (1024 * 1024)).toFixed(2)
+    return formatBytesSize(sizeInBytes)
+}
 
+export function formatBytesSize(size: number) {
     return {
-        kb,
-        mb,
+        kb: formatDecimal(size / 1024, 2),
+        mb: formatDecimal(size / (1024 * 1024), 2),
     }
+}
+
+export function formatDecimal(num: number, offset: number) {
+    const unit = Math.pow(10, offset)
+    return Math.round(unit * num) / unit
 }
 
 export function changeImgType(type: string): ImgTypeEnum | '' {

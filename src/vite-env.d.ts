@@ -34,9 +34,34 @@ interface Window {
         ) => void
     }
     HandleImageModule: {
+        /**
+         * 压缩base64格式的图片
+         * @param base64
+         * @param type 图片类型：jpeg|png|webp|...
+         * @param quality 质量
+         */
         pressImageByBase64: (
             base64: string,
             type: ImgTypeEnum,
+            quality: number
+        ) => Promise<buffer>
+        /**
+         * 压缩图片。传文件路径
+         * @param path
+         * @param quality 质量
+         */
+        pressImageByPath: (path: string, quality: number) => Promise<buffer>
+        /**
+         * 压缩&重置图片大小，传文件路径
+         * @param path
+         * @param width
+         * @param height
+         * @param quality
+         */
+        pressAndResizeImageByPath: (
+            path: string,
+            width: number,
+            height: number,
             quality: number
         ) => Promise<buffer>
     }

@@ -1,12 +1,12 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'node:path'
 import { ImgTypeEnum, RenameFileConfigType } from '../src/types'
+import { batchRenameFiles, batchRenameFilesInDirectory } from './fileName'
 import {
-    batchRenameFiles,
-    batchRenameFilesInDirectory,
-    modifySingleFileName,
-} from './fileName'
-import { pressImageByBuffer } from './handleImage'
+    pressAndResizeImageByPath,
+    pressImageByBuffer,
+    pressImageByPath,
+} from './handleImage'
 
 process.env.DIST = path.join(__dirname, '../dist')
 process.env.PUBLIC = app.isPackaged
@@ -51,6 +51,31 @@ app.whenReady().then(() => {
                 'base64'
             )
             const newBuffer = await pressImageByBuffer(buffer, type, quality)
+            return newBuffer
+        }
+    )
+    ipcMain.handle(
+        'pressImageByPath',
+        async (event: any, path: string, quality: number) => {
+            const newBuffer = await pressImageByPath(path, quality)
+            return newBuffer
+        }
+    )
+    ipcMain.handle(
+        'pressAndResizeImageByPath',
+        async (
+            event: any,
+            path: string,
+            width: number,
+            height: number,
+            quality: number
+        ) => {
+            const newBuffer = await pressAndResizeImageByPath(
+                path,
+                width,
+                height,
+                quality
+            )
             return newBuffer
         }
     )

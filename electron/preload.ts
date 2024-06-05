@@ -29,6 +29,21 @@ const goldaList = [
                 quality: number
             ) =>
                 ipcRenderer.invoke('pressImageByBase64', buffer, type, quality),
+            pressImageByPath: (path: string, quality: number) =>
+                ipcRenderer.invoke('pressImageByPath', path, quality),
+            pressAndResizeImageByPath: (
+                path: string,
+                width: number,
+                height: number,
+                quality: number
+            ) =>
+                ipcRenderer.invoke(
+                    'pressAndResizeImageByPath',
+                    path,
+                    width,
+                    height,
+                    quality
+                ),
         },
     },
 ]

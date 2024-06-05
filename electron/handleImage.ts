@@ -1,6 +1,8 @@
 // import * as sharp from 'sharp'
 import { ImgTypeEnum } from '../src/types'
 import { mathClamp } from '../src/utils'
+import { isDirectory } from './fileName'
+import { join, parse } from 'path'
 
 const sharp = require('sharp')
 
@@ -21,11 +23,32 @@ export async function pressImageByBuffer(
 
 export async function pressImageByPath(
     path: string,
-    type: ImgTypeEnum,
     quality: number
-) {
+): Promise<Buffer> {
+    const isDir = await isDirectory(path)
+    if (isDir) {
+        return
+    }
+    const { ext } = parse(path)
+    const type = ext.replace('.', '')
     const config = { quality: mathClamp(0, 100, Math.ceil(quality * 100)) }
     return sharp(path)[type](config).toBuffer(type)
+}
+
+export async function pressAndResizeImageByPath(
+    path: string,
+    width: number,
+    height: number,
+    quality: number
+) {
+    const isDir = await isDirectory(path)
+    if (isDir) {
+        return
+    }
+    const { ext } = parse(path)
+    const type = ext.replace('.', '')
+    const config = { quality: mathClamp(0, 100, Math.ceil(quality * 100)) }
+    return sharp(path)[type](config).resize(width, height).toBuffer(type)
 }
 
 /**
