@@ -2,17 +2,17 @@
     <div class="select-image">
         <div class="preview-list">
             <div
-                class="img-item m-r-10 b-s-box"
                 v-for="(item, index) in files"
                 :key="item.name"
+                class="img-item m-r-10 b-s-box"
                 @mouseenter="showMark(index)"
                 @mouseleave="hideMark(index)"
                 @click.stop="onSelectChange(index)"
             >
                 <img
+                    v-show="imgSrcList[index]"
                     :class="{ 'img-item-active': selectIndex === index }"
                     :src="imgSrcList[index]"
-                    :alt="item.name"
                 />
                 <div class="mark flex-center" v-show="markList[index]">
                     <el-icon class="mark-btn" size="large"><View /></el-icon>
@@ -24,17 +24,17 @@
                     /></el-icon>
                 </div>
             </div>
-            <div class="btn-file">
-                <el-icon size="large"><Plus /></el-icon>
-                <input
-                    class="input-file"
-                    type="file"
-                    multiple
-                    @change="onChange"
-                    :webkitdirectory="isDir"
-                    :directory="isDir"
-                />
-            </div>
+        </div>
+        <div ref="btnFile" class="btn-file">
+            <el-icon size="large"><Plus /></el-icon>
+            <input
+                class="input-file"
+                type="file"
+                multiple
+                @change="onChange"
+                :webkitdirectory="isDir"
+                :directory="isDir"
+            />
         </div>
     </div>
 </template>
@@ -45,40 +45,81 @@ import { Plus, Delete, View } from '@element-plus/icons-vue'
 const props = defineProps<{
     isDir: boolean
 }>()
-const emits = defineEmits(['onChange', 'onSelectChange'])
+const emits = defineEmits(['onChange', 'onSelectChange', 'onDelete', 'onView'])
 const files = ref<File[]>([])
 const markList = ref<boolean[]>([])
 const imgSrcList = ref<string[]>([])
 const selectIndex = ref(0)
+const curFile = ref<File>()
+const btnFile = ref<HTMLElement>()
 
-function showMark(index) {
+function showMark(index: number) {
     markList.value[index] = true
 }
-function hideMark(index) {
+function hideMark(index: number) {
     markList.value[index] = false
 }
-function deleteImg(index) {
+function deleteImg(index: number) {
     files.value.splice(index, 1)
     imgSrcList.value.splice(index, 1)
+    emits('onDelete', index)
     emits('onChange', files.value)
     selectIndex.value = selectIndex.value ? selectIndex.value - 1 : 0
     onSelectChange(selectIndex.value)
 }
+
 function onChange(e) {
     const fileList = e.target.files as FileList
+    const canvas = document.createElement('canvas')
+    const _width = Number(
+        window.getComputedStyle(btnFile.value).width.split('p')[0]
+    )
+    const _height = Number(
+        window.getComputedStyle(btnFile.value).height.split('p')[0]
+    )
+    const ctx = canvas.getContext('2d')
+
     for (let index = 0; index < fileList.length; index++) {
         const file = fileList[index]
+        const hadFile =
+            files.value.findIndex((item) => {
+                return item.path === file.path
+            }) >= 0
+        if (hadFile) {
+            continue
+        }
         files.value.push(file)
-        imgSrcList.value.push(URL.createObjectURL(file))
+        const url = URL.createObjectURL(file)
+        const imgIndex = files.value.findIndex((item) => item === file)
+        let imgDom = new Image()
+        imgDom.src = url
+        imgDom.onload = () => {
+            const rate =
+                imgDom.width > imgDom.height
+                    ? _width / imgDom.width
+                    : _height / imgDom.height
+            canvas.width = imgDom.width * rate
+            canvas.height = imgDom.height * rate
+            ctx.drawImage(imgDom, 0, 0, canvas.width, canvas.height)
+            const base64 = canvas.toDataURL()
+
+            imgSrcList.value[imgIndex] = base64
+            URL.revokeObjectURL(url)
+            imgDom = null
+        }
         markList[index] = false
     }
 
     emits('onChange', files.value)
-    onSelectChange(selectIndex.value)
+
+    if (files.value[selectIndex.value] !== curFile.value) {
+        onSelectChange(selectIndex.value)
+    }
 }
 
 function onSelectChange(index: number) {
     selectIndex.value = index
+    curFile.value = files.value[index]
     emits('onSelectChange', selectIndex.value)
 }
 </script>
@@ -91,7 +132,8 @@ function onSelectChange(index: number) {
 
 .preview-list {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
 }
 .btn-file {
     position: relative;

@@ -31,8 +31,8 @@
         </el-form>
         <h4>选择图片</h4>
         <select-image
-            @onChange="filesChange"
-            @onSelectChange="onSelectChange"
+            @on-change="filesChange"
+            @on-select-change="onSelectChange"
         ></select-image>
         <h4>
             预览:&nbsp;&nbsp; {{ imgSize.kb }}kb &nbsp;&nbsp;{{ imgSize.mb }}mb
