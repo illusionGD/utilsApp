@@ -13,12 +13,19 @@ const sharp = require('sharp')
  * @param quality 压缩质量
  */
 export async function pressImageByBuffer(
-    buffer: Buffer,
+    buffer: string | Buffer,
     type: ImgTypeEnum,
     quality: number
 ): Promise<Buffer> {
+    const formatBuffer =
+        buffer instanceof Buffer
+            ? buffer
+            : Buffer.from(
+                  buffer.replace(/^data:image\/\w+;base64,/, ''),
+                  'base64'
+              )
     const config = { quality: mathClamp(0, 100, Math.ceil(quality * 100)) }
-    return sharp(buffer)[type](config).toBuffer(type)
+    return sharp(formatBuffer)[type](config).toBuffer(type)
 }
 
 export async function pressImageByPath(

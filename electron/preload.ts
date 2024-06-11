@@ -1,54 +1,26 @@
 import { ipcRenderer } from 'electron'
-import { RenameFileConfigType } from '../src/types'
+import { contextBridge } from 'electron'
 
-const { contextBridge } = require('electron')
-
-const goldaList = [
+const preloadList = [
     {
         name: 'FileNameModule',
-        ping: {
-            batchRenameFilesInDirectory: (filePath: string, newName: string) =>
-                ipcRenderer.invoke(
-                    'batchRenameFilesInDirectory',
-                    filePath,
-                    newName
-                ),
-
-            batchRenameFiles: (
-                pathList: string[],
-                config: RenameFileConfigType
-            ) => ipcRenderer.invoke('batchRenameFiles', pathList, config),
-        },
+        pingMethods: ['batchRenameFilesInDirectory', 'batchRenameFiles'],
     },
     {
         name: 'HandleImageModule',
-        ping: {
-            pressImageByBase64: (
-                buffer: string,
-                type: string,
-                quality: number
-            ) =>
-                ipcRenderer.invoke('pressImageByBase64', buffer, type, quality),
-            pressImageByPath: (path: string, quality: number) =>
-                ipcRenderer.invoke('pressImageByPath', path, quality),
-            pressAndResizeImageByPath: (
-                path: string,
-                width: number,
-                height: number,
-                quality: number
-            ) =>
-                ipcRenderer.invoke(
-                    'pressAndResizeImageByPath',
-                    path,
-                    width,
-                    height,
-                    quality
-                ),
-        },
+        pingMethods: [
+            'pressImageByBase64',
+            'pressImageByPath',
+            'pressAndResizeImageByPath',
+        ],
     },
 ]
 
-goldaList.forEach((item) => {
-    const { name, ping } = item
+preloadList.forEach((item) => {
+    const { name, pingMethods } = item
+    const ping = {}
+    pingMethods.forEach((method) => {
+        ping[method] = (...arg) => ipcRenderer.invoke(method, ...arg)
+    })
     contextBridge.exposeInMainWorld(name, ping)
 })

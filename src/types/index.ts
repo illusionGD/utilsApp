@@ -27,3 +27,7 @@ export enum ImgTypeEnum {
     webp = 'webp',
     gif = 'gif',
 }
+
+export interface AnyObject {
+    [key: string | number | symbol]: any
+}
