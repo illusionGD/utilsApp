@@ -34,9 +34,15 @@
             @on-change="filesChange"
             @on-select-change="onSelectChange"
         ></select-image>
-        <h4>
-            预览:&nbsp;&nbsp; {{ imgSize.kb }}kb &nbsp;&nbsp;{{ imgSize.mb }}mb
-        </h4>
+        <div class="flex-row-between">
+            <h4>
+                预览:&nbsp;&nbsp; {{ imgSize.kb }}kb &nbsp;&nbsp;{{
+                    imgSize.mb
+                }}mb
+            </h4>
+            <el-button type="success" @click="outputImg">输出</el-button>
+        </div>
+
         <div class="preview-img overflow-auto">
             <div ref="loadingMark" v-loading="loading">
                 <img ref="previewImg" style="object-fit: contain" />
@@ -46,6 +52,7 @@
 </template>
 
 <script lang="ts" setup>
+import { ElMessage } from 'element-plus'
 import { onMounted, ref } from 'vue'
 import { formatBytesSize, getBase64Size } from '../utils'
 
@@ -126,7 +133,7 @@ async function drawCanvasImg() {
         computedSize(blob, imgType)
     }
 }
-
+/**计算图片大小 */
 function computedSize(data: Blob | string, imgType: string) {
     const size =
         data instanceof Blob
@@ -134,6 +141,16 @@ function computedSize(data: Blob | string, imgType: string) {
             : getBase64Size(data, imgType)
     imgSize.value.kb = size.kb
     imgSize.value.mb = size.mb
+}
+
+function outputImg() {
+    // 校验输出路径
+    if (!pressConfig.value.outPath) {
+        ElMessage({
+            message: '请选择输出路径！',
+            type: 'warning',
+        })
+    }
 }
 </script>
 

@@ -25,6 +25,12 @@ html.dark {
     @extend .flex-center;
 }
 
+.flex-row-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .flex-colum-center {
     @extend .flex-center;
     flex-direction: column;

@@ -58,6 +58,11 @@ export async function batchRenameFilesInDirectory(
             const file = files[i]
             const filePath = join(directoryPath, file)
             const isDir = await isDirectory(filePath)
+
+            if (isDir) {
+                continue
+            }
+
             const { ext: oldExt } = parse(filePath)
             if (preFix === FileFixEnum.NUMBER) {
                 _prefix = `${i}`
@@ -78,10 +83,6 @@ export async function batchRenameFilesInDirectory(
             }
             fileNames.push(filePath)
             newFileNames.push(newFilePath)
-
-            if (isDir) {
-                await batchRenameFilesInDirectory(filePath, newName)
-            }
         }
 
         const modifyOperate = async (

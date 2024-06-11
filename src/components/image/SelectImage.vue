@@ -62,8 +62,10 @@ function hideMark(index: number) {
 function deleteImg(index: number) {
     files.value.splice(index, 1)
     imgSrcList.value.splice(index, 1)
+
     emits('onDelete', index)
     emits('onChange', files.value)
+
     selectIndex.value = selectIndex.value ? selectIndex.value - 1 : 0
     onSelectChange(selectIndex.value)
 }
@@ -101,8 +103,9 @@ function onChange(e) {
             canvas.width = imgDom.width * rate
             canvas.height = imgDom.height * rate
             ctx.drawImage(imgDom, 0, 0, canvas.width, canvas.height)
-            const base64 = canvas.toDataURL()
 
+            // 优化多张图片文件预览：生成base64来绘制图片，释放ObjectURL
+            const base64 = canvas.toDataURL()
             imgSrcList.value[imgIndex] = base64
             URL.revokeObjectURL(url)
             imgDom = null
