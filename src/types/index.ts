@@ -31,3 +31,19 @@ export enum ImgTypeEnum {
 export interface AnyObject {
     [key: string | number | symbol]: any
 }
+
+export interface BatchPressImgAndOutputByPathType {
+    /**文件路径 */
+    path: string
+    width: number
+    height: number
+    /**质量 */
+    quality: number
+    /**输出路径 */
+    outPath: string
+}
+
+export interface SelectImageFile extends File {
+    width: number
+    height: number
+}

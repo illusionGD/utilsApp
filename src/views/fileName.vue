@@ -32,11 +32,14 @@
 
         <h2>批量修改文件夹文件</h2>
         <dir-select-input v-model="curDirPath"></dir-select-input>
-        <el-button @click="modifyFileName">修改</el-button>
+        <el-button class="m-t-10" type="success" @click="modifyFileName"
+            >修改</el-button
+        >
     </div>
 </template>
 
 <script lang="ts" setup>
+import { ElMessage } from 'element-plus'
 import { ref } from 'vue'
 import { FileFixEnum, RenameFileConfigType, SelectType } from '../types'
 const fixList = ref<SelectType[]>([
@@ -64,17 +67,25 @@ function checkConfig(config: RenameFileConfigType) {
     return true
 }
 
-function modifyFileName() {
+async function modifyFileName() {
     if (!checkConfig(config.value)) {
         return
     }
     const _config = JSON.parse(JSON.stringify(config.value))
     if (curDirPath.value) {
-        if (!/\\/.test(curDirPath.value[curDirPath.value.length - 1])) {
-            curDirPath.value += '\\'
+        try {
+            await window.FileNameModule.batchRenameFiles(
+                [curDirPath.value],
+                _config
+            )
+            ElMessage.success({
+                message: '成功',
+            })
+        } catch (error) {
+            ElMessage.error({
+                message: `${error}`,
+            })
         }
-
-        window.FileNameModule.batchRenameFiles([curDirPath.value], _config)
     }
 }
 </script>

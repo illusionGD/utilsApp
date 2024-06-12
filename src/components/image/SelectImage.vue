@@ -1,10 +1,25 @@
 <template>
     <div class="select-image">
-        <div class="preview-list">
+        <div class="flex-row-start">
+            <div ref="btnFile" class="btn-file m-r-10">
+                <el-button type="success">选择图片</el-button>
+                <!-- <el-icon size="large"><Plus /></el-icon> -->
+                <input
+                    class="input-file"
+                    type="file"
+                    multiple
+                    @change="onChange"
+                    :webkitdirectory="isDir"
+                    :directory="isDir"
+                />
+            </div>
+            <el-button @click="clearAll">清空图片</el-button>
+        </div>
+        <div class="preview-list scroll-small">
             <div
                 v-for="(item, index) in files"
                 :key="item.name"
-                class="img-item m-r-10 b-s-box"
+                class="img-item m-r-5 b-s-box"
                 @mouseenter="showMark(index)"
                 @mouseleave="hideMark(index)"
                 @click.stop="onSelectChange(index)"
@@ -25,32 +40,22 @@
                 </div>
             </div>
         </div>
-        <div ref="btnFile" class="btn-file">
-            <el-icon size="large"><Plus /></el-icon>
-            <input
-                class="input-file"
-                type="file"
-                multiple
-                @change="onChange"
-                :webkitdirectory="isDir"
-                :directory="isDir"
-            />
-        </div>
     </div>
 </template>
 
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { Plus, Delete, View } from '@element-plus/icons-vue'
+import { SelectImageFile } from '../../types'
 const props = defineProps<{
     isDir: boolean
 }>()
 const emits = defineEmits(['onChange', 'onSelectChange', 'onDelete', 'onView'])
-const files = ref<File[]>([])
+const files = ref<SelectImageFile[]>([])
 const markList = ref<boolean[]>([])
 const imgSrcList = ref<string[]>([])
 const selectIndex = ref(0)
-const curFile = ref<File>()
+const curFile = ref<SelectImageFile>()
 const btnFile = ref<HTMLElement>()
 
 function showMark(index: number) {
@@ -58,6 +63,13 @@ function showMark(index: number) {
 }
 function hideMark(index: number) {
     markList.value[index] = false
+}
+function clearAll() {
+    files.value.splice(0, files.value.length)
+    imgSrcList.value.splice(0, imgSrcList.value.length)
+    selectIndex.value = 0
+    emits('onChange', files.value)
+    onSelectChange(selectIndex.value)
 }
 function deleteImg(index: number) {
     files.value.splice(index, 1)
@@ -71,7 +83,7 @@ function deleteImg(index: number) {
 }
 
 function onChange(e) {
-    const fileList = e.target.files as FileList
+    const fileList = e.target.files as SelectImageFile[]
     const canvas = document.createElement('canvas')
     const _width = Number(
         window.getComputedStyle(btnFile.value).width.split('p')[0]
@@ -103,6 +115,10 @@ function onChange(e) {
             canvas.width = imgDom.width * rate
             canvas.height = imgDom.height * rate
             ctx.drawImage(imgDom, 0, 0, canvas.width, canvas.height)
+
+            // 赋值图片宽高
+            files.value[imgIndex].width = imgDom.width
+            files.value[imgIndex].height = imgDom.height
 
             // 优化多张图片文件预览：生成base64来绘制图片，释放ObjectURL
             const base64 = canvas.toDataURL()
@@ -139,12 +155,14 @@ function onSelectChange(index: number) {
     overflow-x: auto;
 }
 .btn-file {
+    width: 110px;
+    height: 50px;
     position: relative;
     @extend .flex-center;
     @extend .file-box;
-    cursor: pointer;
-    border: 1px dashed #fff;
-    border-radius: 5px;
+    // cursor: pointer;
+    // border: 1px dashed #fff;
+    // border-radius: 5px;
 }
 
 .img-item {
@@ -181,5 +199,6 @@ function onSelectChange(index: number) {
     @extend .p-ab-center;
     opacity: 0;
     z-index: 2;
+    cursor: pointer;
 }
 </style>

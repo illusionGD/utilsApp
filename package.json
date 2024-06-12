@@ -3,8 +3,8 @@
     "private": true,
     "version": "0.0.1",
     "scripts": {
-        "dev": "vite",
-        "build": "vue-tsc && vite build && electron-builder",
+        "dev": "set NODE_ENV=development && vite",
+        "build": "set NODE_ENV=production && vue-tsc && vite build && electron-builder",
         "commit": "git add . && git-cz && git push --follow-tags",
         "preview": "vite preview"
     },

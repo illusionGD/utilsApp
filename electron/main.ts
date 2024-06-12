@@ -27,7 +27,7 @@ function createWindow() {
     win = new BrowserWindow({
         width: 1200,
         height: 800,
-        icon: path.join(process.env.PUBLIC, 'electron-vite.svg'),
+        icon: path.join(process.env.PUBLIC, 'logo.png'),
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
         },
@@ -40,8 +40,10 @@ function createWindow() {
             new Date().toLocaleString()
         )
     })
-    // 打开调试
-    win.webContents.openDevTools()
+    if (process.env.NODE_ENV === 'development') {
+        // 打开调试
+        win.webContents.openDevTools()
+    }
 
     if (VITE_DEV_SERVER_URL) {
         win.loadURL(VITE_DEV_SERVER_URL)

@@ -12,6 +12,7 @@ const preloadList = [
             'pressImageByBase64',
             'pressImageByPath',
             'pressAndResizeImageByPath',
+            'batchPressImgAndOutputByPath',
         ],
     },
 ]

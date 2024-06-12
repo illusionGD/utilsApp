@@ -57,6 +57,11 @@ function parseDirPath(file: File) {
 }
 
 function onPathChange() {
+    if (curDirPath.value) {
+        if (!/\\/.test(curDirPath.value[curDirPath.value.length - 1])) {
+            curDirPath.value += '\\'
+        }
+    }
     emits('update:modelValue', curDirPath.value)
     emits('onChange', curDirPath.value)
 }

@@ -4,11 +4,13 @@
     --theme-bg-color: #000;
     --theme-text-color: #fff;
     --theme-active-color: #16ff9a;
+    --theme-gray-color: #252525;
 }
 
 $GlobalThemeColor: var(--theme-bg-color);
 $GlobalTextColor: var(--theme-text-color);
 $GlobalActiveColor: var(--theme-active-color);
+$GlobalAGrayColor: var(--theme-gray-color);
 
 html.dark {
     --el-color-primary: #16ff9a;
@@ -23,6 +25,12 @@ html.dark {
 
 .flex-row-center {
     @extend .flex-center;
+}
+
+.flex-row-start {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
 }
 
 .flex-row-between {
@@ -58,8 +66,16 @@ html.dark {
     background-size: cover;
 }
 
+.m-r-5 {
+    margin-right: 5px;
+}
+
 .m-r-10 {
     margin-right: 10px;
+}
+
+.m-t-10 {
+    margin-top: 10px;
 }
 
 .m-l-10 {
@@ -85,6 +101,26 @@ html.dark {
 
 .overflow-auto-y {
     overflow-y: auto;
+}
+
+.scroll-small {
+    &::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: 2px;
+        background-color: $GlobalAGrayColor;
+    }
+}
+
+.scroll-small-active {
+    @extend .scroll-small;
+
+    &::-webkit-scrollbar-thumb {
+        background-color: $GlobalActiveColor;
+    }
 }
 
 @mixin f-c-c() {}

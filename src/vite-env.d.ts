@@ -64,5 +64,12 @@ interface Window {
             height: number,
             quality: number
         ) => Promise<buffer>
+        /**
+         * 批量压缩并输出图片
+         * @param configs
+         */
+        batchPressImgAndOutputByPath: (
+            configs: BatchPressImgAndOutputByPathType[]
+        ) => Promise<File[]>
     }
 }

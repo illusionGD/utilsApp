@@ -29,21 +29,21 @@
                 ></dir-select-input>
             </el-form-item>
         </el-form>
-        <h4>选择图片</h4>
+        <h4>选择图片 ({{ fileList.length }})</h4>
         <select-image
             @on-change="filesChange"
             @on-select-change="onSelectChange"
         ></select-image>
         <div class="flex-row-between">
             <h4>
-                预览:&nbsp;&nbsp; {{ imgSize.kb }}kb &nbsp;&nbsp;{{
-                    imgSize.mb
-                }}mb
+                {{ getPreviewInfo() }}
             </h4>
-            <el-button type="success" @click="outputImg">输出</el-button>
+            <el-button type="success" @click="outputImg" :loading="pressLock"
+                >输出</el-button
+            >
         </div>
 
-        <div class="preview-img overflow-auto">
+        <div class="preview-img overflow-auto scroll-small">
             <div ref="loadingMark" v-loading="loading">
                 <img ref="previewImg" style="object-fit: contain" />
             </div>
@@ -54,6 +54,7 @@
 <script lang="ts" setup>
 import { ElMessage } from 'element-plus'
 import { onMounted, ref } from 'vue'
+import { BatchPressImgAndOutputByPathType, SelectImageFile } from '../types'
 import { formatBytesSize, getBase64Size } from '../utils'
 
 const pressConfig = ref({
@@ -61,10 +62,10 @@ const pressConfig = ref({
     rate: 1.0,
     outPath: '',
 })
-const fileList = ref<File[]>([])
+const fileList = ref<SelectImageFile[]>([])
 const readFile = new FileReader()
 const currentImgDom = ref<HTMLImageElement>()
-const currentFile = ref<File>()
+const currentFile = ref<SelectImageFile>()
 const previewImg = ref<HTMLImageElement>()
 const loadingMark = ref<HTMLElement>()
 const imgSize = ref({
@@ -72,6 +73,7 @@ const imgSize = ref({
     mb: 0,
 })
 const loading = ref(false)
+const pressLock = ref(false)
 onMounted(() => {
     readFile.addEventListener('load', (e) => {
         const imgDom = new Image()
@@ -84,8 +86,24 @@ onMounted(() => {
     })
 })
 
+function getPreviewInfo() {
+    const { kb, mb } = imgSize.value
+    let str = `预览:  ${kb}kb  ${mb}mb`
+    if (currentFile.value) {
+        const { width, height } = currentFile.value
+        const scaleWH = scaleImgWH(width, height, pressConfig.value.scale)
+        str += ` 宽:${scaleWH.width}px  高:${scaleWH.height}px`
+    }
+    return str
+}
+
 function filesChange(files) {
     fileList.value = files
+    if (!fileList.value.length) {
+        previewImg.value.src = ''
+        currentImgDom.value.src = ''
+        currentFile.value = null
+    }
 }
 /**监听选择图片 */
 function onSelectChange(index) {
@@ -101,8 +119,11 @@ async function drawCanvasImg() {
     if (!currentImgDom.value || loading.value) {
         return
     }
-    const _width = Math.round(currentImgDom.value.width * scale)
-    const _height = Math.round(currentImgDom.value.height * scale)
+    const { width: _width, height: _height } = scaleImgWH(
+        currentImgDom.value.width,
+        currentImgDom.value.height,
+        scale
+    )
     const imgType = currentFile.value.type
 
     previewImg.value.width = _width
@@ -142,14 +163,66 @@ function computedSize(data: Blob | string, imgType: string) {
     imgSize.value.kb = size.kb
     imgSize.value.mb = size.mb
 }
-
-function outputImg() {
+/**缩放宽高 */
+function scaleImgWH(w: number, h: number, s: number) {
+    return {
+        width: Math.round(w * s),
+        height: Math.round(h * s),
+    }
+}
+/**输出图片 */
+async function outputImg() {
+    if (pressLock.value) {
+        return
+    }
     // 校验输出路径
     if (!pressConfig.value.outPath) {
         ElMessage({
             message: '请选择输出路径！',
             type: 'warning',
         })
+        return
+    }
+
+    // 校验文件
+    if (!fileList.value.length) {
+        ElMessage({
+            message: '请选择文件！',
+            type: 'warning',
+        })
+        return
+    }
+
+    const { scale, rate } = pressConfig.value
+    // 输出
+    const configs: BatchPressImgAndOutputByPathType[] = fileList.value.map(
+        ({ path, width, height }) => {
+            const { width: _width, height: _height } = scaleImgWH(
+                width,
+                height,
+                scale
+            )
+            return {
+                path,
+                quality: rate,
+                outPath: pressConfig.value.outPath,
+                width: _width,
+                height: _height,
+            }
+        }
+    )
+    pressLock.value = true
+    try {
+        await window.HandleImageModule.batchPressImgAndOutputByPath(configs)
+        ElMessage.success({
+            message: '成功',
+        })
+        pressLock.value = false
+    } catch (error) {
+        ElMessage.error({
+            message: `${error}`,
+        })
+        pressLock.value = false
     }
 }
 </script>

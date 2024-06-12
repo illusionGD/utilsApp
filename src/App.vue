@@ -1,13 +1,11 @@
 <template>
     <sidebar></sidebar>
-    <div class="main-content">
+    <div class="main-content scroll-small">
         <router-view></router-view>
     </div>
 </template>
 
 <style lang="scss">
-// @import '@/assets/css/global.scss';
-
 #app {
     display: flex;
     width: 100%;
