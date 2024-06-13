@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu } from 'electron'
 import path from 'node:path'
 import { AnyObject } from '../src/types'
 import * as FileNameModule from './fileName'
@@ -12,8 +12,17 @@ process.env.PUBLIC = app.isPackaged
 let win: BrowserWindow | null
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
-
 app.whenReady().then(() => {
+    ipcMain.on('minimizeWindow', () => {
+        console.log('minimize')
+
+        win.minimize()
+    })
+
+    ipcMain.on('closeWindow', () => {
+        console.log('close')
+        win.close()
+    })
     initMainHandle(FileNameModule)
     initMainHandle(ImageModule)
     createWindow()
@@ -31,6 +40,9 @@ function createWindow() {
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
         },
+        autoHideMenuBar: true,
+        frame: false,
+        titleBarStyle: 'hidden',
     })
 
     // Test active push message to Renderer-process.
@@ -40,7 +52,7 @@ function createWindow() {
             new Date().toLocaleString()
         )
     })
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV.trim() === 'development') {
         // 打开调试
         win.webContents.openDevTools()
     }

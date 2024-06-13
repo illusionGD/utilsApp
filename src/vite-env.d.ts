@@ -8,6 +8,10 @@ declare module '*.vue' {
 }
 
 interface Window {
+    Electron: {
+        minimizeWindow: () => void
+        closeWindow: () => void
+    }
     FileNameModule: {
         /**
          * @description: 批量修改文件名
@@ -46,12 +50,6 @@ interface Window {
             quality: number
         ) => Promise<buffer>
         /**
-         * 压缩图片。传文件路径
-         * @param path
-         * @param quality 质量
-         */
-        pressImageByPath: (path: string, quality: number) => Promise<buffer>
-        /**
          * 压缩&重置图片大小，传文件路径
          * @param path
          * @param width
@@ -70,6 +68,19 @@ interface Window {
          */
         batchPressImgAndOutputByPath: (
             configs: BatchPressImgAndOutputByPathType[]
+        ) => Promise<File[]>
+        /**
+         * 压缩并输出文件夹下的图片
+         * @param dirPath 文件夹
+         * @param outDirPath 输出文件夹夹
+         * @param scale 缩放比例
+         * @param quality 质量
+         */
+        pressImgAndOutputByDir: (
+            dirPath: string,
+            outDirPath: string,
+            scale: number,
+            quality: number
         ) => Promise<File[]>
     }
 }

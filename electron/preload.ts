@@ -13,9 +13,15 @@ const preloadList = [
             'pressImageByPath',
             'pressAndResizeImageByPath',
             'batchPressImgAndOutputByPath',
+            'pressImgAndOutputByDir',
         ],
     },
 ]
+
+contextBridge.exposeInMainWorld('Electron', {
+    minimizeWindow: () => ipcRenderer.send('minimizeWindow'),
+    closeWindow: () => ipcRenderer.send('closeWindow'),
+})
 
 preloadList.forEach((item) => {
     const { name, pingMethods } = item

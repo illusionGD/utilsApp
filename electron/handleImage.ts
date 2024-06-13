@@ -1,8 +1,13 @@
-// import * as sharp from 'sharp'
-import { BatchPressImgAndOutputByPathType, ImgTypeEnum } from '../src/types'
+// import sharp from 'sharp'
+import {
+    BatchPressImgAndOutputByPathType,
+    ImgTypeEnum,
+    PressOutputConfig,
+} from '../src/types'
 import { changeImgType, mathClamp } from '../src/utils'
 import { isDirectory } from './fileName'
 import { parse } from 'path'
+import { promises } from 'fs'
 
 const sharp = require('sharp')
 
@@ -15,6 +20,19 @@ async function getImgTypeByPath(path: string) {
     const type = ext.replace('.', '')
 
     return changeImgType(type)
+}
+
+function getBatchPressTask(configList: PressOutputConfig[]) {
+    return configList.map(
+        ({ path, width, height, type, quality, outDirPath, name }) => {
+            return sharp(path)
+                [type]({
+                    quality: mathClamp(0, 100, Math.ceil(quality * 100)),
+                })
+                .resize(width, height)
+                .toFile(outDirPath + name)
+        }
+    )
 }
 
 /**
@@ -40,22 +58,6 @@ export async function pressImageByBuffer(
 }
 
 /**
- * 压缩图片：读取路径文件
- * @param path
- * @param quality
- */
-export async function pressImageByPath(
-    path: string,
-    quality: number
-): Promise<Buffer> {
-    const type = (await getImgTypeByPath(path)) || ''
-    if (!type) {
-        return
-    }
-    const config = { quality: mathClamp(0, 100, Math.ceil(quality * 100)) }
-    return sharp(path)[type](config).toBuffer(type)
-}
-/**
  * 压缩图片并重置宽高：读取路径文件
  * @param path 文件路径
  * @param width 宽
@@ -74,23 +76,7 @@ export async function pressAndResizeImageByPath(
     }
     const config = { quality: mathClamp(0, 100, Math.ceil(quality * 100)) }
 
-    return sharp(path)[type](config).resize(width, height).toBuffer(type)
-}
-
-/**
- * 压缩并输出图片：接收buffer类型图片数据
- * @param buffer
- * @param type 图片类型
- * @param quality 压缩质量
- * @param outPath 输出图片位置
- */
-export function pressAndOutImageByBuffer(
-    buffer: Buffer,
-    type: ImgTypeEnum,
-    quality: number,
-    outPath: string
-) {
-    return sharp(buffer)[changeImgType(type)]({ quality }).toFile(outPath)
+    return sharp(path)[type](config).resize(width, height).toBuffer()
 }
 
 /**
@@ -100,7 +86,7 @@ export function pressAndOutImageByBuffer(
 export async function batchPressImgAndOutputByPath(
     configs: BatchPressImgAndOutputByPathType[]
 ) {
-    const pressProcess = []
+    const pressProcess: PressOutputConfig[] = []
     for (let index = 0; index < configs.length; index++) {
         const { path } = configs[index]
         const type = await getImgTypeByPath(path)
@@ -111,20 +97,63 @@ export async function batchPressImgAndOutputByPath(
         pressProcess.push({
             ...configs[index],
             type,
-            fileName: name + ext,
+            name: name + ext,
         })
     }
 
-    return await Promise.all(
-        pressProcess.map(
-            ({ path, width, height, type, quality, outPath, fileName }) => {
-                return sharp(path)
-                    [type]({
-                        quality: mathClamp(0, 100, Math.ceil(quality * 100)),
-                    })
-                    .resize(width, height)
-                    .toFile(outPath + fileName)
-            }
-        )
-    )
+    return await Promise.all(getBatchPressTask(pressProcess))
+}
+
+/**
+ * 压缩并输出文件夹下的图片
+ * @param dirPath 文件夹
+ * @param outDirPath 输出文件夹夹
+ * @param scale 缩放比例
+ * @param quality 质量
+ */
+export async function pressImgAndOutputByDir(
+    dirPath: string,
+    outDirPath: string,
+    scale: number,
+    quality: number
+) {
+    const isDir = await isDirectory(dirPath)
+    if (!isDir) {
+        return
+    }
+
+    const filePathList = await promises.readdir(dirPath)
+    const imgList = []
+    // 过滤文件夹&非图片文件
+    for (let index = 0; index < filePathList.length; index++) {
+        const path = dirPath + filePathList[index]
+        const type = await getImgTypeByPath(path)
+        const { name, ext } = await parse(path)
+        const fileName = name + ext
+        type &&
+            imgList.push({
+                path,
+                type,
+                name: fileName,
+                quality,
+                outDirPath,
+            })
+    }
+
+    if (!imgList.length) {
+        return
+    }
+
+    const configList: PressOutputConfig[] = []
+
+    // 获取图片宽高
+    for (let i = 0; i < imgList.length; i++) {
+        const { width, height } = await sharp(imgList[i].path).metadata()
+        configList.push({
+            ...imgList[i],
+            width: scale * width,
+            height: scale * height,
+        })
+    }
+    return await Promise.all(getBatchPressTask(configList))
 }

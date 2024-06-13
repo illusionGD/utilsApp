@@ -1,3 +1,5 @@
 <template>
-    <div class="home">HOME</div>
+    <div class="home flex-center p-ab-center">
+        <img src="../../public/logo.png" alt="" />
+    </div>
 </template>

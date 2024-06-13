@@ -12,7 +12,7 @@
                     <el-button :icon="Folder" size="large" />
                     <input
                         type="file"
-                        @change="onChange"
+                        @input="onChange"
                         :accept="accept || '*'"
                         :webkitdirectory="isDir"
                         :directory="isDir"

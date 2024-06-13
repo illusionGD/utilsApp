@@ -1,17 +1,24 @@
 <template>
-    <sidebar></sidebar>
-    <div class="main-content scroll-small">
-        <router-view></router-view>
+    <header-menu class="menu"></header-menu>
+    <div class="content">
+        <sidebar></sidebar>
+        <div class="main-content scroll-small">
+            <router-view></router-view>
+        </div>
     </div>
 </template>
 
 <style lang="scss">
 #app {
-    display: flex;
-    width: 100%;
     height: 100vh;
     background-color: $GlobalThemeColor;
     color: $GlobalTextColor;
+}
+.content {
+    flex: 1;
+    display: flex;
+    width: 100%;
+    height: calc(100vh - 50px);
     padding: 0;
 }
 
@@ -25,10 +32,9 @@ body {
     float: left;
 }
 .main-content {
-    // width: 100%;
     flex: 1;
     box-sizing: border-box;
-    min-height: 100vh;
+    height: 100%;
     overflow-y: auto;
     padding: 10px;
 }

@@ -1,4 +1,4 @@
-import { ImgTypeEnum } from '../types'
+import { AnyObject, ImgTypeEnum } from '../types'
 
 export function formatFilePath(path: string) {
     return path.replace(/\\/g, '/')
@@ -28,7 +28,7 @@ export function formatDecimal(num: number, offset: number) {
 }
 
 export function changeImgType(type: string): ImgTypeEnum | '' {
-    const method = {
+    const method: AnyObject = {
         jpg: 'jpeg',
         jpeg: 'jpeg',
         png: 'png',
@@ -36,13 +36,7 @@ export function changeImgType(type: string): ImgTypeEnum | '' {
         gif: 'gif',
     }
 
-    for (const key in method) {
-        if (type.includes(key)) {
-            return method[key]
-        }
-    }
-
-    return ''
+    return method[type] || ''
 }
 /**
  * 限制数值的取值范围

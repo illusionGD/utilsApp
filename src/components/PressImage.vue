@@ -28,24 +28,46 @@
                     v-model="pressConfig.outPath"
                 ></dir-select-input>
             </el-form-item>
+            <br />
+            <el-form-item>
+                <el-switch
+                    v-model="isFile"
+                    active-text="文件"
+                    inactive-text="文件夹"
+                />
+            </el-form-item>
+            <br />
+            <el-form-item label="输入位置" v-show="!isFile">
+                <dir-select-input
+                    v-model="pressConfig.dirPath"
+                ></dir-select-input>
+                <el-button class="m-l-10" type="success" @click="outputImg">
+                    输出
+                </el-button>
+            </el-form-item>
         </el-form>
-        <h4>选择图片 ({{ fileList.length }})</h4>
-        <select-image
-            @on-change="filesChange"
-            @on-select-change="onSelectChange"
-        ></select-image>
-        <div class="flex-row-between">
-            <h4>
-                {{ getPreviewInfo() }}
-            </h4>
-            <el-button type="success" @click="outputImg" :loading="pressLock"
-                >输出</el-button
-            >
-        </div>
+        <div v-show="isFile">
+            <h4>选择图片 ({{ fileList.length }})</h4>
+            <select-image
+                @on-change="filesChange"
+                @on-select-change="onSelectChange"
+            ></select-image>
+            <div class="flex-row-between">
+                <h4>
+                    {{ getPreviewInfo() }}
+                </h4>
+                <el-button
+                    type="success"
+                    @click="outputImg"
+                    :loading="pressLock"
+                    >输出</el-button
+                >
+            </div>
 
-        <div class="preview-img overflow-auto scroll-small">
-            <div ref="loadingMark" v-loading="loading">
-                <img ref="previewImg" style="object-fit: contain" />
+            <div class="preview-img overflow-auto scroll-small">
+                <div ref="loadingMark" v-loading="loading">
+                    <img ref="previewImg" style="object-fit: contain" />
+                </div>
             </div>
         </div>
     </div>
@@ -61,6 +83,7 @@ const pressConfig = ref({
     scale: 1.0,
     rate: 1.0,
     outPath: '',
+    dirPath: '',
 })
 const fileList = ref<SelectImageFile[]>([])
 const readFile = new FileReader()
@@ -74,6 +97,8 @@ const imgSize = ref({
 })
 const loading = ref(false)
 const pressLock = ref(false)
+const isFile = ref(true)
+
 onMounted(() => {
     readFile.addEventListener('load', (e) => {
         const imgDom = new Image()
@@ -183,46 +208,65 @@ async function outputImg() {
         })
         return
     }
-
-    // 校验文件
-    if (!fileList.value.length) {
-        ElMessage({
-            message: '请选择文件！',
-            type: 'warning',
-        })
-        return
-    }
-
-    const { scale, rate } = pressConfig.value
-    // 输出
-    const configs: BatchPressImgAndOutputByPathType[] = fileList.value.map(
-        ({ path, width, height }) => {
-            const { width: _width, height: _height } = scaleImgWH(
-                width,
-                height,
-                scale
-            )
-            return {
-                path,
-                quality: rate,
-                outPath: pressConfig.value.outPath,
-                width: _width,
-                height: _height,
-            }
-        }
-    )
-    pressLock.value = true
     try {
-        await window.HandleImageModule.batchPressImgAndOutputByPath(configs)
+        if (isFile.value) {
+            // 校验文件
+            if (!fileList.value.length) {
+                ElMessage({
+                    message: '请选择文件！',
+                    type: 'warning',
+                })
+                return
+            }
+            pressLock.value = true
+
+            const { scale, rate } = pressConfig.value
+            // 输出
+            const configs: BatchPressImgAndOutputByPathType[] =
+                fileList.value.map(({ path, width, height }) => {
+                    const { width: _width, height: _height } = scaleImgWH(
+                        width,
+                        height,
+                        scale
+                    )
+                    return {
+                        path,
+                        quality: rate,
+                        outDirPath: pressConfig.value.outPath,
+                        width: _width,
+                        height: _height,
+                    }
+                })
+            await window.HandleImageModule.batchPressImgAndOutputByPath(configs)
+        } else {
+            // 文件夹方式
+
+            if (!pressConfig.value.dirPath) {
+                ElMessage({
+                    message: '请选择输入路径！',
+                    type: 'warning',
+                })
+                return
+            }
+            pressLock.value = true
+            const { dirPath, outPath, scale, rate } = pressConfig.value
+            await window.HandleImageModule.pressImgAndOutputByDir(
+                dirPath,
+                outPath,
+                scale,
+                rate
+            )
+        }
+        pressLock.value = false
         ElMessage.success({
             message: '成功',
         })
-        pressLock.value = false
     } catch (error) {
         ElMessage.error({
             message: `${error}`,
         })
         pressLock.value = false
+        console.log('🚀 ~ error:', error)
     }
 }
 </script>

@@ -16,12 +16,12 @@
                     :key="i"
                     :index="item.index"
                 >
-                    <el-icon><component :is="item.Icon"></component></el-icon>
-                    <span
-                        ><router-link :to="item.path">{{
-                            item.title
-                        }}</router-link></span
-                    >
+                    <router-link :to="item.path">
+                        <el-icon
+                            ><component :is="item.Icon"></component
+                        ></el-icon>
+                        {{ item.title }}
+                    </router-link>
                 </el-menu-item>
             </el-sub-menu>
             <el-menu-item index="2">

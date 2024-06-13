@@ -40,7 +40,14 @@ export interface BatchPressImgAndOutputByPathType {
     /**质量 */
     quality: number
     /**输出路径 */
-    outPath: string
+    outDirPath: string
+}
+
+export interface PressOutputConfig extends BatchPressImgAndOutputByPathType {
+    /**图片类型 */
+    type: string
+    /**图片名称 */
+    name: string
 }
 
 export interface SelectImageFile extends File {
