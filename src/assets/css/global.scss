@@ -74,12 +74,24 @@ html.dark {
     margin-right: 10px;
 }
 
+.m-r-20 {
+    margin-right: 20px;
+}
+
 .m-t-10 {
     margin-top: 10px;
 }
 
 .m-l-10 {
     margin-left: 10px;
+}
+
+.font-size-14 {
+    font-size: 14px;
+}
+
+.text-no-wrap {
+    white-space: nowrap;
 }
 
 .b-s-box {
@@ -120,6 +132,23 @@ html.dark {
 
     &::-webkit-scrollbar-thumb {
         background-color: $GlobalActiveColor;
+    }
+}
+
+.common-btn-file {
+    width: 110px;
+    height: 50px;
+    position: relative;
+    @extend .flex-center;
+    cursor: pointer;
+
+    input {
+        width: 100%;
+        height: 100%;
+        @extend .p-ab-center;
+        opacity: 0;
+        z-index: 2;
+        cursor: pointer;
     }
 }
 

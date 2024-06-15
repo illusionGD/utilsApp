@@ -54,3 +54,8 @@ export interface SelectImageFile extends File {
     width: number
     height: number
 }
+
+export interface SelectPathType {
+    isDir?: boolean
+    multi?: boolean
+}

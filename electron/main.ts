@@ -1,6 +1,6 @@
-import { app, BrowserWindow, ipcMain, Menu } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import path from 'node:path'
-import { AnyObject } from '../src/types'
+import { AnyObject, SelectPathType } from '../src/types'
 import * as FileNameModule from './fileName'
 import * as ImageModule from './handleImage'
 
@@ -10,22 +10,32 @@ process.env.PUBLIC = app.isPackaged
     : path.join(process.env.DIST, '../public')
 
 let win: BrowserWindow | null
-// 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 app.whenReady().then(() => {
+    const wind = createWindow()
+    // 最小化
     ipcMain.on('minimizeWindow', () => {
-        console.log('minimize')
-
         win.minimize()
     })
-
+    // 关闭
     ipcMain.on('closeWindow', () => {
-        console.log('close')
         win.close()
+    })
+    // 选择文件路径
+    ipcMain.handle('selectPath', async (e, params: SelectPathType) => {
+        const { isDir, multi } = params
+        const properties = []
+
+        properties.push(isDir ? 'openDirectory' : 'openFile')
+        multi && properties.push('multiSelections')
+
+        const result = await dialog.showOpenDialog(wind, {
+            properties,
+        })
+        return result.filePaths
     })
     initMainHandle(FileNameModule)
     initMainHandle(ImageModule)
-    createWindow()
 })
 
 app.on('window-all-closed', () => {
@@ -45,13 +55,6 @@ function createWindow() {
         titleBarStyle: 'hidden',
     })
 
-    // Test active push message to Renderer-process.
-    win.webContents.on('did-finish-load', () => {
-        win?.webContents.send(
-            'main-process-message',
-            new Date().toLocaleString()
-        )
-    })
     if (process.env.NODE_ENV.trim() === 'development') {
         // 打开调试
         win.webContents.openDevTools()
@@ -60,9 +63,10 @@ function createWindow() {
     if (VITE_DEV_SERVER_URL) {
         win.loadURL(VITE_DEV_SERVER_URL)
     } else {
-        // win.loadFile('dist/index.html')
         win.loadFile(path.join(process.env.DIST, 'index.html'))
     }
+
+    return win
 }
 
 function initMainHandle(module: AnyObject) {

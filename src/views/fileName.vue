@@ -60,8 +60,13 @@ const config = ref<RenameFileConfigType>({
 const curDirPath = ref('')
 
 function checkConfig(config: RenameFileConfigType) {
-    const { preFix, sufFix } = config
+    const { preFix, sufFix, newName } = config
+    if (!newName) {
+        ElMessage.warning({ message: '请选输入新文件名称' })
+        return false
+    }
     if (!preFix && !sufFix) {
+        ElMessage.warning({ message: '请选择前缀或后缀' })
         return false
     }
     return true

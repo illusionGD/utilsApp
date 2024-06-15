@@ -7,6 +7,7 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    BitmapFont: typeof import('./src/components/BitmapFont.vue')['default']
     DirSelectInput: typeof import('./src/components/input/DirSelectInput.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElForm: typeof import('element-plus/es')['ElForm']

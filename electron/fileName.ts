@@ -1,4 +1,4 @@
-import { rename, stat, promises } from 'fs'
+import { rename, stat, promises, writeFileSync } from 'fs'
 import { join, parse } from 'path'
 import { FileFixEnum, RenameFileConfigType } from '../src/types'
 
@@ -209,4 +209,8 @@ export function isDirectory(filePath: string) {
 export function getFileNameNotExt(filePath: string) {
     const parsedPath = parse(filePath)
     return parsedPath.name
+}
+
+export function outputFile(path: string, data: any) {
+    return writeFileSync(path, data)
 }

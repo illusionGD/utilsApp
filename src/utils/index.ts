@@ -47,3 +47,14 @@ export function changeImgType(type: string): ImgTypeEnum | '' {
 export function mathClamp(min: number, max: number, num: number) {
     return Math.min(Math.max(num, min), max)
 }
+
+/**base64转blob */
+export function base64ToBlob(base64: string, type: string) {
+    const byteCharacters = atob(base64.split(',')[1]) // 解码 base64
+    const byteNumbers = new Array(byteCharacters.length)
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i)
+    }
+    const byteArray = new Uint8Array(byteNumbers)
+    return new Blob([byteArray], { type })
+}

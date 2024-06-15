@@ -4,7 +4,11 @@ import { contextBridge } from 'electron'
 const preloadList = [
     {
         name: 'FileNameModule',
-        pingMethods: ['batchRenameFilesInDirectory', 'batchRenameFiles'],
+        pingMethods: [
+            'batchRenameFilesInDirectory',
+            'batchRenameFiles',
+            'outputFile',
+        ],
     },
     {
         name: 'HandleImageModule',
@@ -14,6 +18,7 @@ const preloadList = [
             'pressAndResizeImageByPath',
             'batchPressImgAndOutputByPath',
             'pressImgAndOutputByDir',
+            'outputBase64Img',
         ],
     },
 ]
@@ -21,6 +26,7 @@ const preloadList = [
 contextBridge.exposeInMainWorld('Electron', {
     minimizeWindow: () => ipcRenderer.send('minimizeWindow'),
     closeWindow: () => ipcRenderer.send('closeWindow'),
+    selectPath: (...arg) => ipcRenderer.invoke('selectPath', ...arg),
 })
 
 preloadList.forEach((item) => {

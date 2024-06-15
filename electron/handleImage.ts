@@ -7,7 +7,7 @@ import {
 import { changeImgType, mathClamp } from '../src/utils'
 import { isDirectory } from './fileName'
 import { parse } from 'path'
-import { promises } from 'fs'
+import { promises, writeFileSync } from 'fs'
 
 const sharp = require('sharp')
 
@@ -156,4 +156,19 @@ export async function pressImgAndOutputByDir(
         })
     }
     return await Promise.all(getBatchPressTask(configList))
+}
+
+export function outputBase64Img(outPath: string, base64: string) {
+    // 移除 URL 头部 (data:image/png;base64,)
+    const matches = base64.match(/^data:(.+);base64,(.+)$/)
+    if (matches === null) {
+        throw new Error('Invalid base64 string')
+    }
+    const base64Data = matches[2] // 提取 Base64 数据
+
+    // 将 Base64 编码字符串转换为 Buffer
+    const buffer = Buffer.from(base64Data, 'base64')
+
+    // 将 Buffer 写入文件
+    return writeFileSync(outPath, buffer)
 }

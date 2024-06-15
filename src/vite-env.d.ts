@@ -11,6 +11,7 @@ interface Window {
     Electron: {
         minimizeWindow: () => void
         closeWindow: () => void
+        selectPath: (params: SelectPathType) => string[]
     }
     FileNameModule: {
         /**
@@ -36,6 +37,8 @@ interface Window {
             pathList: string[],
             config: RenameFileConfigType
         ) => void
+
+        outputFile: (path: string, data: any) => void
     }
     HandleImageModule: {
         /**
@@ -82,5 +85,12 @@ interface Window {
             scale: number,
             quality: number
         ) => Promise<File[]>
+
+        /**
+         * 输出base64格式的图片
+         * @param outPath
+         * @param base64
+         */
+        outputBase64Img: (outPath: string, base64: string) => void
     }
 }

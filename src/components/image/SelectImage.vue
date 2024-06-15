@@ -1,17 +1,9 @@
 <template>
     <div class="select-image">
         <div class="flex-row-start">
-            <div ref="btnFile" class="btn-file m-r-10">
+            <div ref="btnFile" class="btn-file common-btn-file m-r-10">
                 <el-button type="success">选择图片</el-button>
-                <!-- <el-icon size="large"><Plus /></el-icon> -->
-                <input
-                    class="input-file"
-                    type="file"
-                    multiple
-                    @change="onChange"
-                    :webkitdirectory="isDir"
-                    :directory="isDir"
-                />
+                <input type="file" multiple @change="onChange" />
             </div>
             <el-button @click="clearAll">清空图片</el-button>
         </div>
@@ -47,9 +39,6 @@
 import { ref } from 'vue'
 import { Plus, Delete, View } from '@element-plus/icons-vue'
 import { SelectImageFile } from '../../types'
-const props = defineProps<{
-    isDir: boolean
-}>()
 const emits = defineEmits(['onChange', 'onSelectChange', 'onDelete', 'onView'])
 const files = ref<SelectImageFile[]>([])
 const markList = ref<boolean[]>([])
@@ -157,12 +146,7 @@ function onSelectChange(index: number) {
 .btn-file {
     width: 110px;
     height: 50px;
-    position: relative;
-    @extend .flex-center;
     @extend .file-box;
-    // cursor: pointer;
-    // border: 1px dashed #fff;
-    // border-radius: 5px;
 }
 
 .img-item {
@@ -192,13 +176,5 @@ function onSelectChange(index: number) {
 
 .img-item-active {
     border: 1px solid $GlobalActiveColor;
-}
-.input-file {
-    width: 100%;
-    height: 100%;
-    @extend .p-ab-center;
-    opacity: 0;
-    z-index: 2;
-    cursor: pointer;
 }
 </style>

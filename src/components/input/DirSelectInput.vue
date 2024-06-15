@@ -8,15 +8,8 @@
             @change="onPathChange"
         >
             <template #prepend>
-                <div class="btn-file">
+                <div class="btn-file" @click="selectDir">
                     <el-button :icon="Folder" size="large" />
-                    <input
-                        type="file"
-                        @input="onChange"
-                        :accept="accept || '*'"
-                        :webkitdirectory="isDir"
-                        :directory="isDir"
-                    />
                 </div>
             </template>
             <template #append v-if="isShowSelect">
@@ -36,6 +29,7 @@
 <script setup lang="ts">
 import { Folder } from '@element-plus/icons-vue'
 import { ref, watch } from 'vue'
+import { SelectPathType } from '../../types'
 const props = defineProps<{
     modelValue: string
     accept?: string
@@ -50,14 +44,8 @@ watch(propValue, () => {
     curDirPath.value = propValue.value
 })
 
-function parseDirPath(file: File) {
-    // @ts-ignore
-    const path = file.path
-    return path.replace(file.webkitRelativePath.split('/')[1], '')
-}
-
 function onPathChange() {
-    if (curDirPath.value) {
+    if (curDirPath.value && isDir.value) {
         if (!/\\/.test(curDirPath.value[curDirPath.value.length - 1])) {
             curDirPath.value += '\\'
         }
@@ -66,10 +54,11 @@ function onPathChange() {
     emits('onChange', curDirPath.value)
 }
 
-function onChange(e) {
-    const files = e.target.files as FileList
-    const dirPath = files.length ? parseDirPath(files[0]) : ''
-    curDirPath.value = dirPath
+async function selectDir() {
+    const paths = await window.Electron.selectPath({
+        isDir: isDir.value,
+    } as SelectPathType)
+    curDirPath.value = paths[0]?.replace('\\\\', '\\') || curDirPath.value
     onPathChange()
 }
 </script>
