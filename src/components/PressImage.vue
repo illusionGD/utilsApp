@@ -41,7 +41,12 @@
                 <dir-select-input
                     v-model="pressConfig.dirPath"
                 ></dir-select-input>
-                <el-button class="m-l-10" type="success" @click="outputImg">
+                <el-button
+                    class="m-l-10"
+                    type="success"
+                    :loading="pressLock"
+                    @click="outputImg"
+                >
                     输出
                 </el-button>
             </el-form-item>

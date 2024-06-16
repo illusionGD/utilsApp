@@ -7,9 +7,16 @@ import {
 import { changeImgType, mathClamp } from '../src/utils'
 import { isDirectory } from './fileName'
 import { parse } from 'path'
-import { promises, writeFileSync } from 'fs'
+import { promises, writeFileSync, existsSync, mkdirSync } from 'fs'
 
 const sharp = require('sharp')
+
+/**判断并创建空文件夹 */
+function ensureDirectoryExistence(folderPath) {
+    if (!existsSync(folderPath)) {
+        mkdirSync(folderPath, { recursive: true })
+    }
+}
 
 async function getImgTypeByPath(path: string) {
     const isDir = await isDirectory(path)
@@ -127,6 +134,12 @@ export async function pressImgAndOutputByDir(
     // 过滤文件夹&非图片文件
     for (let index = 0; index < filePathList.length; index++) {
         const path = dirPath + filePathList[index]
+        const dir = await isDirectory(path)
+        if (dir) {
+            const output = outDirPath + filePathList[index] + '\\'
+            ensureDirectoryExistence(output)
+            await pressImgAndOutputByDir(path + '\\', output, scale, quality)
+        }
         const type = await getImgTypeByPath(path)
         const { name, ext } = await parse(path)
         const fileName = name + ext

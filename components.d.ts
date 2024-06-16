@@ -7,9 +7,11 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    BgCanvas: typeof import('./src/components/image/BgCanvas.vue')['default']
     BitmapFont: typeof import('./src/components/BitmapFont.vue')['default']
     DirSelectInput: typeof import('./src/components/input/DirSelectInput.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
+    ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
     ElForm: typeof import('element-plus/es')['ElForm']
     ElFormItem: typeof import('element-plus/es')['ElFormItem']
     ElIcon: typeof import('element-plus/es')['ElIcon']

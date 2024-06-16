@@ -58,3 +58,29 @@ export function base64ToBlob(base64: string, type: string) {
     const byteArray = new Uint8Array(byteNumbers)
     return new Blob([byteArray], { type })
 }
+
+export function createTransparentSquare(
+    canvas: HTMLCanvasElement,
+    size: number
+) {
+    const ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    // 横向方块数量
+    const rowNum = canvas.width / size
+    // 宗向方块数量
+    const colNum = canvas.height / size
+    let x = 0
+    let y = 0
+    for (let i = 0; i < colNum; i++) {
+        y = i * size
+        for (let j = 0; j < rowNum; j++) {
+            x = j * size
+
+            ctx.fillStyle = (i + j) % 2 ? '#7a7a7a' : '#fff'
+            ctx.fillRect(x, y, size, size)
+        }
+    }
+
+    return canvas.toDataURL('image/png')
+}

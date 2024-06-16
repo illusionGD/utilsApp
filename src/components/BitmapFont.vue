@@ -10,6 +10,7 @@
                     @change="generateBitmapFont"
                 ></el-input>
             </el-form-item>
+            <br />
             <el-form-item label="位图宽">
                 <el-input
                     v-model="bitmapFntConfig.width"
@@ -31,6 +32,21 @@
                 ></el-input>
             </el-form-item>
             <br />
+            <el-form-item>
+                <el-checkbox
+                    v-model="bitmapFntConfig.fixWidth"
+                    label="适配宽"
+                    @change="generateBitmapFont"
+                />
+            </el-form-item>
+            <el-form-item>
+                <el-checkbox
+                    v-model="bitmapFntConfig.fixHeight"
+                    label="适配高"
+                    @change="generateBitmapFont"
+                />
+            </el-form-item>
+            <br />
             <el-form-item label="输出路径">
                 <dir-select-input
                     v-model="bitmapFntConfig.outDirPath"
@@ -44,7 +60,7 @@
                 <input type="file" multiple @input="onFileChange" />
             </div>
             <el-button @click="clearAll">清空图片</el-button>
-            <el-button :loading="lock" @click="downloadData"
+            <el-button :loading="lock" plain @click="downloadData"
                 >输出位图字体</el-button
             >
         </div>
@@ -86,27 +102,29 @@
                         ></el-input>
                     </span>
                 </div>
-                <!-- <div class="operates">
-
-                </div> -->
             </div>
         </div>
         <h4>预览: {{ fntSize.kb }}kb {{ fntSize.mb }}mb</h4>
         <div class="preview-box scroll-small">
-            <canvas
-                ref="previewCanvas"
-                class="preview-canvas"
+            <bg-canvas
                 :width="bitmapFntConfig.width"
                 :height="bitmapFntConfig.height"
-            ></canvas>
+            >
+                <canvas
+                    ref="previewCanvas"
+                    class="preview-canvas"
+                    :width="bitmapFntConfig.width"
+                    :height="bitmapFntConfig.height"
+                ></canvas>
+            </bg-canvas>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ElMessage } from 'element-plus'
-import { ref } from 'vue'
-import { base64ToBlob, formatBytesSize, getBase64Size } from '../utils'
+import { nextTick, ref } from 'vue'
+import { base64ToBlob, formatBytesSize } from '../utils'
 
 const imgList = ref<
     {
@@ -119,10 +137,12 @@ const imgList = ref<
 >([])
 const previewCanvas = ref<HTMLCanvasElement>()
 const bitmapFntConfig = ref({
-    width: 500,
-    height: 500,
+    width: 512,
+    height: 512,
     outDirPath: '',
     imgName: 'bitmap-fnt',
+    fixWidth: true,
+    fixHeight: false,
 })
 const fntSize = ref({
     kb: 0,
@@ -148,6 +168,7 @@ async function onFileChange(e) {
     generateBitmapFont()
     e.target.value = ''
 }
+
 async function initImgList(list: File[]) {
     if (!list.length) {
         return
@@ -178,40 +199,109 @@ async function initImgList(list: File[]) {
 }
 
 async function generateBitmapFont() {
+    const { fixWidth, fixHeight } = bitmapFntConfig.value
+    if (!imgList.value.length) {
+        clearCanvas()
+        return
+    }
+    const getFixWH = () => {
+        let maxWidth = 0
+        let maxHeight = 0
+        let temHeight = 0
+        let maxRow = 0
+        let maxCol = 0
+        let area = 0
+
+        imgList.value.forEach(({ dom, offsetX, offsetY }) => {
+            const _width = dom.width + Number(offsetX)
+            const _height = dom.height + Number(offsetY)
+            maxWidth += _width
+            temHeight = Math.max(_height, temHeight)
+            maxHeight += temHeight
+            maxRow = Math.max(_width, maxRow)
+            maxCol = Math.max(_height, maxCol)
+            area += _width * _height
+        })
+
+        return {
+            maxWidth,
+            maxHeight,
+            maxRow,
+            maxCol,
+            area,
+        }
+    }
+    const { maxWidth, maxHeight, maxRow, maxCol, area } = getFixWH()
+
+    // 适配宽
+    if (fixWidth && !fixHeight) {
+        bitmapFntConfig.value.width = maxWidth
+        bitmapFntConfig.value.height = maxCol
+    }
+
+    // 适配高
+    if (!fixWidth && fixHeight) {
+        bitmapFntConfig.value.width = maxRow
+        bitmapFntConfig.value.height = maxHeight
+    }
+
+    // const { width, height } = bitmapFntConfig.value
+
+    // 适配宽&高: 更改图片宽高
+    // if (fixWidth && fixHeight) {
+    //     // 计算缩放比例
+    //     const rate = (width * height) / area
+
+    //     if (rate < 1) {
+    //         imgList.value.forEach(({ dom }) => {
+    //             // dom.style.transform = `scale(${rate})`
+    //             // dom.width *= rate
+    //             // dom.height *= rate
+    //         })
+    //     } else {
+    //     }
+    // }
+
+    nextTick(() => {
+        dragImg()
+    })
+}
+
+async function dragImg() {
     const canvas = previewCanvas.value
     const ctx = canvas.getContext('2d')
     let x = 0
     let y = 0
     let rowHeight = 0
     const glyphs = []
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
     fntSize.value.kb = 0
     fntSize.value.mb = 0
+    clearCanvas()
 
     if (!imgList.value.length) {
         return
     }
-
     for (let index = 0; index < imgList.value.length; index++) {
         const { dom: image, offsetX, offsetY, id } = imgList.value[index]
         const xoffset = Number(offsetX)
         const yoffset = Number(offsetY)
-        // 偏移
-        x += xoffset
-        y = yoffset
 
         // 换行绘制
-        if (x + image.width > canvas.width) {
+        if (x + image.width + xoffset > canvas.width) {
             x = xoffset
             y += rowHeight
         }
+
+        // 偏移
+        x += xoffset
+        y += yoffset
 
         if (y + image.height > canvas.height) {
             ElMessage.error('Canvas size is too small to fit all images')
             return
         }
 
-        ctx.drawImage(image, x, y)
+        ctx.drawImage(image, x, y, image.width, image.height)
 
         glyphs.push({
             char: id,
@@ -233,6 +323,12 @@ async function generateBitmapFont() {
     fntSize.value = formatBytesSize(base64ToBlob(fontImageData, imgType).size)
     outputContent.fontImageData = fontImageData
     outputContent.fntData = generateFntData(glyphs)
+}
+
+function clearCanvas() {
+    const canvas = previewCanvas.value
+    const ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
 }
 
 function generateFntData(
@@ -324,7 +420,7 @@ function loadImage(src): Promise<HTMLImageElement> {
 .preview-box {
     width: 100%;
     .preview-canvas {
-        border: 1px dashed #fff;
+        // border: 1px dashed #fff;
     }
 }
 </style>
