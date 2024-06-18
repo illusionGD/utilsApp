@@ -54,6 +54,8 @@
         <div v-show="isFile">
             <h4>选择图片 ({{ fileList.length }})</h4>
             <select-image
+                :is-contain="false"
+                :scale-rate="0.1"
                 @on-change="filesChange"
                 @on-select-change="onSelectChange"
             ></select-image>

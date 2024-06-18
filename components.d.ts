@@ -26,11 +26,13 @@ declare module 'vue' {
     ElTabs: typeof import('element-plus/es')['ElTabs']
     ElUpload: typeof import('element-plus/es')['ElUpload']
     HeaderMenu: typeof import('./src/components/HeaderMenu.vue')['default']
+    JoinImage: typeof import('./src/components/JoinImage.vue')['default']
     PressImage: typeof import('./src/components/PressImage.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SelectImage: typeof import('./src/components/image/SelectImage.vue')['default']
     Sidebar: typeof import('./src/components/Sidebar.vue')['default']
+    SpriteImage: typeof import('./src/components/SpriteImage.vue')['default']
   }
   export interface ComponentCustomProperties {
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']

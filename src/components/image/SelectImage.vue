@@ -20,6 +20,7 @@
                     v-show="imgSrcList[index]"
                     :class="{ 'img-item-active': selectIndex === index }"
                     :src="imgSrcList[index]"
+                    :style="{ objectFit: isContain ? 'contain' : 'cover' }"
                 />
                 <div class="mark flex-center" v-show="markList[index]">
                     <el-icon class="mark-btn" size="large"><View /></el-icon>
@@ -38,8 +39,19 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { Plus, Delete, View } from '@element-plus/icons-vue'
-import { SelectImageFile } from '../../types'
-const emits = defineEmits(['onChange', 'onSelectChange', 'onDelete', 'onView'])
+import { AnyObject, SelectImageFile } from '../../types'
+import { loadImage } from '../../utils'
+const props = defineProps<{
+    scaleRate: number
+    isContain: boolean
+}>()
+const emits = defineEmits([
+    'onChange',
+    'onSelectChange',
+    'onDelete',
+    'onView',
+    'onLoad',
+])
 const files = ref<SelectImageFile[]>([])
 const markList = ref<boolean[]>([])
 const imgSrcList = ref<string[]>([])
@@ -81,6 +93,7 @@ function onChange(e) {
         window.getComputedStyle(btnFile.value).height.split('p')[0]
     )
     const ctx = canvas.getContext('2d')
+    const loadList = []
 
     for (let index = 0; index < fileList.length; index++) {
         const file = fileList[index]
@@ -94,27 +107,33 @@ function onChange(e) {
         files.value.push(file)
         const url = URL.createObjectURL(file)
         const imgIndex = files.value.findIndex((item) => item === file)
-        let imgDom = new Image()
-        imgDom.src = url
-        imgDom.onload = () => {
-            const rate =
-                imgDom.width > imgDom.height
-                    ? _width / imgDom.width
-                    : _height / imgDom.height
-            canvas.width = imgDom.width * rate
-            canvas.height = imgDom.height * rate
-            ctx.drawImage(imgDom, 0, 0, canvas.width, canvas.height)
+        loadList.push(
+            loadImage(url).then((imgDom) => {
+                let rate = 1
+                if (props.scaleRate) {
+                    rate = props.scaleRate
+                } else {
+                    imgDom.width > imgDom.height
+                        ? _width / imgDom.width
+                        : _height / imgDom.height
+                }
+                canvas.width = imgDom.width * rate
+                canvas.height = imgDom.height * rate
+                ctx.drawImage(imgDom, 0, 0, canvas.width, canvas.height)
 
-            // 赋值图片宽高
-            files.value[imgIndex].width = imgDom.width
-            files.value[imgIndex].height = imgDom.height
+                // 赋值图片宽高
+                files.value[imgIndex].width = imgDom.width
+                files.value[imgIndex].height = imgDom.height
 
-            // 优化多张图片文件预览：生成base64来绘制图片，释放ObjectURL
-            const base64 = canvas.toDataURL()
-            imgSrcList.value[imgIndex] = base64
-            URL.revokeObjectURL(url)
-            imgDom = null
-        }
+                // 优化多张图片文件预览：生成base64来绘制图片，释放ObjectURL
+                const base64 = canvas.toDataURL()
+                imgSrcList.value[imgIndex] = base64
+                // URL.revokeObjectURL(url)
+                // imgDom = null
+                return imgDom
+            })
+        )
+
         markList[index] = false
     }
 
@@ -123,6 +142,10 @@ function onChange(e) {
     if (files.value[selectIndex.value] !== curFile.value) {
         onSelectChange(selectIndex.value)
     }
+
+    Promise.all(loadList).then((resList) => {
+        emits('onLoad', resList)
+    })
 }
 
 function onSelectChange(index: number) {

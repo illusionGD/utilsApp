@@ -8,14 +8,20 @@
                     <press-image></press-image>
                 </div>
             </el-tab-pane>
-            <el-tab-pane label="位图字体" name="font">
+            <el-tab-pane label="精灵图" name="font">
                 <div
                     class="tab-content overflow-auto-y scroll-small overflow-auto-y scroll-small overflow-auto-y scroll-small"
                 >
-                    <bitmap-font></bitmap-font>
+                    <sprite-image></sprite-image>
                 </div>
-                <el-tab-pane label="拼接图片" name="join"></el-tab-pane>
             </el-tab-pane>
+            <!-- <el-tab-pane label="拼接图片" name="join">
+                <div
+                    class="tab-content overflow-auto-y scroll-small overflow-auto-y scroll-small overflow-auto-y scroll-small"
+                >
+                    <join-image></join-image>
+                </div>
+            </el-tab-pane> -->
         </el-tabs>
     </div>
 </template>

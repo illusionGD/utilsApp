@@ -58,7 +58,11 @@ export function base64ToBlob(base64: string, type: string) {
     const byteArray = new Uint8Array(byteNumbers)
     return new Blob([byteArray], { type })
 }
-
+/**
+ * 绘制透明通道背景格子图
+ * @param canvas
+ * @param size 每个格子大小
+ */
 export function createTransparentSquare(
     canvas: HTMLCanvasElement,
     size: number
@@ -82,5 +86,14 @@ export function createTransparentSquare(
         }
     }
 
-    return canvas.toDataURL('image/png')
+    return canvas.toDataURL('image/jpeg', 0.5)
+}
+
+export function loadImage(src: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+        const img = new Image()
+        img.onload = () => resolve(img)
+        img.onerror = reject
+        img.src = src
+    })
 }

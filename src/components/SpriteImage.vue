@@ -2,7 +2,7 @@
     <div class="bitmap-fnt">
         <h4>位图配置</h4>
         <el-form :inline="true" :model="bitmapFntConfig" class="press-config">
-            <el-form-item label="位图名称">
+            <el-form-item label="精灵图名称">
                 <el-input
                     v-model="bitmapFntConfig.imgName"
                     :value="bitmapFntConfig.imgName"
@@ -11,7 +11,7 @@
                 ></el-input>
             </el-form-item>
             <br />
-            <el-form-item label="位图宽">
+            <el-form-item label="图片宽">
                 <el-input
                     v-model="bitmapFntConfig.width"
                     placeholder="宽"
@@ -21,7 +21,7 @@
                     @change="generateBitmapFont"
                 ></el-input>
             </el-form-item>
-            <el-form-item label="位图高">
+            <el-form-item label="图片高">
                 <el-input
                     v-model="bitmapFntConfig.height"
                     type="number"
@@ -32,19 +32,21 @@
                 ></el-input>
             </el-form-item>
             <br />
-            <el-form-item>
-                <el-checkbox
-                    v-model="bitmapFntConfig.fixWidth"
-                    label="适配宽"
+            <el-form-item label="适配方向">
+                <el-select
+                    v-model="bitmapFntConfig.fix"
+                    clearable
+                    placeholder="适配"
+                    style="width: 200px"
                     @change="generateBitmapFont"
-                />
-            </el-form-item>
-            <el-form-item>
-                <el-checkbox
-                    v-model="bitmapFntConfig.fixHeight"
-                    label="适配高"
-                    @change="generateBitmapFont"
-                />
+                >
+                    <el-option
+                        v-for="item in fixSelectList"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value"
+                    />
+                </el-select>
             </el-form-item>
             <br />
             <el-form-item label="输出路径">
@@ -60,8 +62,11 @@
                 <input type="file" multiple @input="onFileChange" />
             </div>
             <el-button @click="clearAll">清空图片</el-button>
-            <el-button :loading="lock" plain @click="downloadData"
+            <el-button :loading="lock" plain @click="downloadData(false)"
                 >输出位图字体</el-button
+            >
+            <el-button :loading="lock" plain @click="downloadData(true)"
+                >仅输出图片</el-button
             >
         </div>
         <div class="file-list overflow-auto-y scroll-small m-t-10 m-r-10">
@@ -124,7 +129,7 @@
 <script setup lang="ts">
 import { ElMessage } from 'element-plus'
 import { nextTick, ref } from 'vue'
-import { base64ToBlob, formatBytesSize } from '../utils'
+import { base64ToBlob, formatBytesSize, loadImage } from '../utils'
 
 const imgList = ref<
     {
@@ -141,8 +146,7 @@ const bitmapFntConfig = ref({
     height: 512,
     outDirPath: '',
     imgName: 'bitmap-fnt',
-    fixWidth: true,
-    fixHeight: false,
+    fix: 'width',
 })
 const fntSize = ref({
     kb: 0,
@@ -153,6 +157,17 @@ const outputContent = {
     fntData: '',
     fontImageData: '',
 }
+
+const fixSelectList = ref([
+    {
+        label: '宽',
+        value: 'width',
+    },
+    {
+        label: '高',
+        value: 'height',
+    },
+])
 
 const imgType = 'image/png'
 
@@ -199,7 +214,6 @@ async function initImgList(list: File[]) {
 }
 
 async function generateBitmapFont() {
-    const { fixWidth, fixHeight } = bitmapFntConfig.value
     if (!imgList.value.length) {
         clearCanvas()
         return
@@ -216,8 +230,8 @@ async function generateBitmapFont() {
             const _width = dom.width + Number(offsetX)
             const _height = dom.height + Number(offsetY)
             maxWidth += _width
-            temHeight = Math.max(_height, temHeight)
-            maxHeight += temHeight
+            // temHeight = Math.max(_height, temHeight)
+            maxHeight += _height
             maxRow = Math.max(_width, maxRow)
             maxCol = Math.max(_height, maxCol)
             area += _width * _height
@@ -234,33 +248,16 @@ async function generateBitmapFont() {
     const { maxWidth, maxHeight, maxRow, maxCol, area } = getFixWH()
 
     // 适配宽
-    if (fixWidth && !fixHeight) {
+    if (bitmapFntConfig.value.fix === 'width') {
         bitmapFntConfig.value.width = maxWidth
         bitmapFntConfig.value.height = maxCol
     }
 
     // 适配高
-    if (!fixWidth && fixHeight) {
+    if (bitmapFntConfig.value.fix === 'height') {
         bitmapFntConfig.value.width = maxRow
         bitmapFntConfig.value.height = maxHeight
     }
-
-    // const { width, height } = bitmapFntConfig.value
-
-    // 适配宽&高: 更改图片宽高
-    // if (fixWidth && fixHeight) {
-    //     // 计算缩放比例
-    //     const rate = (width * height) / area
-
-    //     if (rate < 1) {
-    //         imgList.value.forEach(({ dom }) => {
-    //             // dom.style.transform = `scale(${rate})`
-    //             // dom.width *= rate
-    //             // dom.height *= rate
-    //         })
-    //     } else {
-    //     }
-    // }
 
     nextTick(() => {
         dragImg()
@@ -281,23 +278,31 @@ async function dragImg() {
     if (!imgList.value.length) {
         return
     }
+    const { fix } = bitmapFntConfig.value
+    const changeRow = () => {
+        x = 0
+        y += rowHeight
+    }
     for (let index = 0; index < imgList.value.length; index++) {
         const { dom: image, offsetX, offsetY, id } = imgList.value[index]
         const xoffset = Number(offsetX)
         const yoffset = Number(offsetY)
 
-        // 换行绘制
-        if (x + image.width + xoffset > canvas.width) {
-            x = xoffset
-            y += rowHeight
+        if (!fix) {
+            // 换行绘制
+            if (x + image.width + xoffset > canvas.width) {
+                changeRow()
+            }
+        } else if (fix === 'height') {
+            changeRow()
         }
 
         // 偏移
         x += xoffset
         y += yoffset
 
-        if (y + image.height > canvas.height) {
-            ElMessage.error('Canvas size is too small to fit all images')
+        if (!fix && y + image.height > canvas.height) {
+            ElMessage.error('超出图片大小限制')
             return
         }
 
@@ -368,7 +373,7 @@ function generateFntData(
     return fontData
 }
 
-async function downloadData() {
+async function downloadData(onlyOutputImg?: boolean) {
     const { outDirPath, imgName } = bitmapFntConfig.value
     if (!imgName) {
         ElMessage.warning({ message: '请填写位图名称' })
@@ -382,25 +387,19 @@ async function downloadData() {
     const imgPath = outDirPath + imgName + '.png'
     const fntPath = outDirPath + imgName + '.fnt'
     try {
-        await Promise.all([
-            window.FileNameModule.outputFile(fntPath, fntData),
+        const outputList = [
             window.HandleImageModule.outputBase64Img(imgPath, fontImageData),
-        ])
+        ]
+        if (!onlyOutputImg) {
+            outputList.push(window.FileNameModule.outputFile(fntPath, fntData))
+        }
+        await Promise.all(outputList)
         ElMessage.success({ message: '成功' })
         lock.value = false
     } catch (error) {
         ElMessage.error({ message: error })
         lock.value = false
     }
-}
-
-function loadImage(src): Promise<HTMLImageElement> {
-    return new Promise((resolve, reject) => {
-        const img = new Image()
-        img.onload = () => resolve(img)
-        img.onerror = reject
-        img.src = src
-    })
 }
 </script>
 
