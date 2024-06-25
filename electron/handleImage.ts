@@ -7,7 +7,8 @@ import {
 import { changeImgType, mathClamp } from '../src/utils'
 import { isDirectory } from './fileName'
 import { parse } from 'path'
-import { promises, writeFileSync, existsSync, mkdirSync } from 'fs'
+import { promises, writeFileSync, existsSync, mkdirSync, rename } from 'fs'
+import { remove } from 'fs-extra'
 
 const sharp = require('sharp')
 
@@ -120,25 +121,42 @@ export async function batchPressImgAndOutputByPath(
  */
 export async function pressImgAndOutputByDir(
     dirPath: string,
-    outDirPath: string,
-    scale: number,
-    quality: number
+    outDirPath?: string,
+    scale?: number,
+    quality?: number
 ) {
     const isDir = await isDirectory(dirPath)
     if (!isDir) {
-        return
+        throw new Error('请选择文件夹路径！')
     }
 
     const filePathList = await promises.readdir(dirPath)
     const imgList = []
-    // 过滤文件夹&非图片文件
+    const imgScale = scale || 1
+    const imgQuality = quality || 1
+
+    let tempPath = ''
+    let newOutputPath = outDirPath || dirPath
+
+    if (newOutputPath === dirPath) {
+        tempPath = `${outDirPath}${'.temp'}\\`
+        // 如果是同一文件夹，先创建缓存文件夹
+        mkdirSync(tempPath)
+        newOutputPath = tempPath
+    }
+
     for (let index = 0; index < filePathList.length; index++) {
         const path = dirPath + filePathList[index]
         const dir = await isDirectory(path)
         if (dir) {
-            const output = outDirPath + filePathList[index] + '\\'
+            const output = newOutputPath + filePathList[index] + '\\'
             ensureDirectoryExistence(output)
-            await pressImgAndOutputByDir(path + '\\', output, scale, quality)
+            await pressImgAndOutputByDir(
+                path + '\\',
+                output,
+                imgScale,
+                imgQuality
+            )
         }
         const type = await getImgTypeByPath(path)
         const { name, ext } = await parse(path)
@@ -148,8 +166,8 @@ export async function pressImgAndOutputByDir(
                 path,
                 type,
                 name: fileName,
-                quality,
-                outDirPath,
+                quality: imgQuality,
+                outDirPath: newOutputPath,
             })
     }
 
@@ -164,11 +182,36 @@ export async function pressImgAndOutputByDir(
         const { width, height } = await sharp(imgList[i].path).metadata()
         configList.push({
             ...imgList[i],
-            width: scale * width,
-            height: scale * height,
+            width: imgScale * width,
+            height: imgScale * height,
         })
     }
-    return await Promise.all(getBatchPressTask(configList))
+    const outputFiles = await Promise.all(getBatchPressTask(configList))
+
+    // 覆盖原来的图片
+    await Promise.all(
+        imgList.map((item) => {
+            return new Promise((resolve, reject) => {
+                rename(
+                    item.outDirPath + item.name,
+                    outDirPath + item.name,
+                    (err: any) => {
+                        if (err) {
+                            reject(err)
+                        } else {
+                            resolve(true)
+                        }
+                    }
+                )
+            })
+        })
+    )
+
+    // 删除temp文件夹
+    if (tempPath) {
+        remove(tempPath)
+    }
+    return outputFiles
 }
 
 export function outputBase64Img(outPath: string, base64: string) {

@@ -40,8 +40,11 @@
 
 <script lang="ts" setup>
 import { ElMessage } from 'element-plus'
-import { ref } from 'vue'
+import { onBeforeMount, ref, watch } from 'vue'
+import { useLocalConfig } from '../hooks/useLocalConfig'
 import { FileFixEnum, RenameFileConfigType, SelectType } from '../types'
+import { LOCAL_STORAGE_KEY } from '../utils/constant'
+import { getLocalStorage, setLocalStorage } from '../utils/store'
 const fixList = ref<SelectType[]>([
     {
         label: '数字',
@@ -59,8 +62,10 @@ const config = ref<RenameFileConfigType>({
 })
 const curDirPath = ref('')
 
+useLocalConfig(LOCAL_STORAGE_KEY.modifyFileNameConfig, config)
+
 function checkConfig(config: RenameFileConfigType) {
-    const { preFix, sufFix, newName } = config
+    const { preFix, sufFix } = config
     if (!preFix && !sufFix) {
         ElMessage.warning({ message: '请选择前缀或后缀' })
         return false
@@ -74,19 +79,13 @@ async function modifyFileName() {
     }
     const _config = JSON.parse(JSON.stringify(config.value))
     if (curDirPath.value) {
-        try {
-            await window.FileNameModule.batchRenameFiles(
-                [curDirPath.value],
-                _config
-            )
-            ElMessage.success({
-                message: '成功',
-            })
-        } catch (error) {
-            ElMessage.error({
-                message: `${error}`,
-            })
-        }
+        await window.FileNameModule.batchRenameFiles(
+            [curDirPath.value],
+            _config
+        )
+        ElMessage.success({
+            message: '成功',
+        })
     }
 }
 </script>

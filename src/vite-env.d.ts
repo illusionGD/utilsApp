@@ -12,6 +12,8 @@ interface Window {
         minimizeWindow: () => void
         closeWindow: () => void
         selectPath: (params: SelectPathType) => string[]
+        /** 主进程错误回调 */
+        onMainError: (fn: (msg: string) => void) => void
     }
     FileNameModule: {
         /**
@@ -81,9 +83,9 @@ interface Window {
          */
         pressImgAndOutputByDir: (
             dirPath: string,
-            outDirPath: string,
-            scale: number,
-            quality: number
+            outDirPath?: string,
+            scale?: number,
+            quality?: number
         ) => Promise<File[]>
 
         /**

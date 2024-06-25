@@ -10,6 +10,7 @@
     },
     "dependencies": {
         "element-plus": "^2.3.9",
+        "fs-extra": "^11.2.0",
         "sharp": "^0.33.4",
         "vue": "^3.2.47",
         "vue-router": "^4.2.4"

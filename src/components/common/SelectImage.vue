@@ -6,6 +6,7 @@
                 <input type="file" multiple @change="onChange" />
             </div>
             <el-button @click="clearAll">清空图片</el-button>
+            <el-button plain @click="onOutput">输出</el-button>
         </div>
         <div class="preview-list scroll-small">
             <div
@@ -51,6 +52,7 @@ const emits = defineEmits([
     'onDelete',
     'onView',
     'onLoad',
+    'onOutput',
 ])
 const files = ref<SelectImageFile[]>([])
 const markList = ref<boolean[]>([])
@@ -152,6 +154,10 @@ function onSelectChange(index: number) {
     selectIndex.value = index
     curFile.value = files.value[index]
     emits('onSelectChange', selectIndex.value)
+}
+
+function onOutput() {
+    emits('onOutput')
 }
 </script>
 

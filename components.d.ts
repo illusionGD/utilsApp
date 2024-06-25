@@ -7,9 +7,10 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    BgCanvas: typeof import('./src/components/image/BgCanvas.vue')['default']
+    BgCanvas: typeof import('./src/components/common/BgCanvas.vue')['default']
+    BitmapFnt: typeof import('./src/components/BitmapFnt.vue')['default']
     BitmapFont: typeof import('./src/components/BitmapFont.vue')['default']
-    DirSelectInput: typeof import('./src/components/input/DirSelectInput.vue')['default']
+    DirSelectInput: typeof import('./src/components/common/DirSelectInput.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
     ElForm: typeof import('element-plus/es')['ElForm']
@@ -30,7 +31,7 @@ declare module 'vue' {
     PressImage: typeof import('./src/components/PressImage.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    SelectImage: typeof import('./src/components/image/SelectImage.vue')['default']
+    SelectImage: typeof import('./src/components/common/SelectImage.vue')['default']
     Sidebar: typeof import('./src/components/Sidebar.vue')['default']
     SpriteImage: typeof import('./src/components/SpriteImage.vue')['default']
   }

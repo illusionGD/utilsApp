@@ -1,5 +1,5 @@
 <template>
-    <div class="dir-select-input">
+    <div class="dir-select-input" :style="{ width: width }">
         <el-input
             v-model="curDirPath"
             :placeholder="isDir ? '文件夹路径' : '文件路径'"
@@ -28,12 +28,14 @@
 
 <script setup lang="ts">
 import { Folder } from '@element-plus/icons-vue'
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { SelectPathType } from '../../types'
 const props = defineProps<{
     modelValue: string
+    width: string
     accept?: string
     isShowSelect?: boolean
+    value?: string
 }>()
 const isDir = ref(true)
 const propValue = ref(props.modelValue)
@@ -42,6 +44,10 @@ const emits = defineEmits(['update:modelValue', 'onChange'])
 
 watch(propValue, () => {
     curDirPath.value = propValue.value
+})
+
+onMounted(() => {
+    curDirPath.value = props.value
 })
 
 function onPathChange() {

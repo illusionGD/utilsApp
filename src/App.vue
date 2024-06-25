@@ -8,6 +8,15 @@
     </div>
 </template>
 
+<script lang="ts">
+import { ElMessage } from 'element-plus'
+
+window.Electron.onMainError((msg) => {
+    console.log('🚀 ~ msg:', msg)
+    ElMessage.error(msg)
+})
+</script>
+
 <style lang="scss">
 #app {
     height: 100vh;

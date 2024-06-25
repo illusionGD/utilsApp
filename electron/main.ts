@@ -34,8 +34,8 @@ app.whenReady().then(() => {
         })
         return result.filePaths
     })
-    initMainHandle(FileNameModule)
-    initMainHandle(ImageModule)
+    initMainHandle(wind, FileNameModule)
+    initMainHandle(wind, ImageModule)
 })
 
 app.on('window-all-closed', () => {
@@ -69,10 +69,21 @@ function createWindow() {
     return win
 }
 
-function initMainHandle(module: AnyObject) {
+/** 初始化主线程模块处理函数 */
+function initMainHandle(wind: BrowserWindow, module: AnyObject) {
     Object.keys(module).forEach((key) => [
         ipcMain.handle(key, async (event: any, ...arg) => {
-            return await module[key](...arg)
+            try {
+                return await module[key](...arg)
+            } catch (error) {
+                // 向渲染进程发送错误消息
+                wind.webContents.send(
+                    'mainError',
+                    typeof error === 'string' ? error : `${error}`
+                )
+
+                throw error
+            }
         }),
     ])
 }

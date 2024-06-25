@@ -1,7 +1,12 @@
 <template>
     <div class="press-image">
         <h4>压缩配置</h4>
-        <el-form :inline="true" :model="pressConfig" class="press-config">
+        <el-form
+            :inline="true"
+            :model="pressConfig"
+            class="press-config"
+            style="width: 100%"
+        >
             <el-form-item label="压缩倍率">
                 <el-input
                     v-model="pressConfig.rate"
@@ -23,54 +28,52 @@
                 ></el-input>
             </el-form-item>
             <br />
+            <el-form-item label="输入位置" v-show="!pressConfig.isFile">
+                <dir-select-input
+                    v-model="pressConfig.dirPath"
+                    :value="pressConfig.outPath"
+                    :width="'485px'"
+                ></dir-select-input>
+            </el-form-item>
+            <br />
             <el-form-item label="输出位置">
                 <dir-select-input
                     v-model="pressConfig.outPath"
-                ></dir-select-input>
-            </el-form-item>
-            <br />
-            <el-form-item>
-                <el-switch
-                    v-model="isFile"
-                    active-text="文件"
-                    inactive-text="文件夹"
-                />
-            </el-form-item>
-            <br />
-            <el-form-item label="输入位置" v-show="!isFile">
-                <dir-select-input
-                    v-model="pressConfig.dirPath"
+                    :value="pressConfig.outPath"
+                    :width="'485px'"
                 ></dir-select-input>
                 <el-button
-                    class="m-l-10"
-                    type="success"
+                    v-show="!pressConfig.isFile"
                     :loading="pressLock"
+                    class="m-l-10"
+                    type="primary"
+                    plain
                     @click="outputImg"
                 >
                     输出
                 </el-button>
             </el-form-item>
+            <br />
+            <el-form-item>
+                <el-switch
+                    v-model="pressConfig.isFile"
+                    active-text="文件"
+                    inactive-text="文件夹"
+                />
+            </el-form-item>
         </el-form>
-        <div v-show="isFile">
+        <div v-show="pressConfig.isFile">
             <h4>选择图片 ({{ fileList.length }})</h4>
             <select-image
                 :is-contain="false"
                 :scale-rate="0.1"
                 @on-change="filesChange"
                 @on-select-change="onSelectChange"
+                @on-output="outputImg"
             ></select-image>
-            <div class="flex-row-between">
-                <h4>
-                    {{ getPreviewInfo() }}
-                </h4>
-                <el-button
-                    type="success"
-                    @click="outputImg"
-                    :loading="pressLock"
-                    >输出</el-button
-                >
-            </div>
-
+            <h4>
+                {{ getPreviewInfo() }}
+            </h4>
             <div class="preview-img overflow-auto scroll-small">
                 <div ref="loadingMark" v-loading="loading">
                     <img ref="previewImg" style="object-fit: contain" />
@@ -82,15 +85,19 @@
 
 <script lang="ts" setup>
 import { ElMessage } from 'element-plus'
-import { onMounted, ref } from 'vue'
+import { onBeforeMount, onMounted, ref, watch } from 'vue'
 import { BatchPressImgAndOutputByPathType, SelectImageFile } from '../types'
 import { formatBytesSize, getBase64Size } from '../utils'
+import { LOCAL_STORAGE_KEY } from '../utils/constant'
+import { getLocalStorage, setLocalStorage } from '../utils/store'
+import { useLocalConfig } from '../hooks/useLocalConfig'
 
 const pressConfig = ref({
     scale: 1.0,
     rate: 1.0,
     outPath: '',
     dirPath: '',
+    isFile: true,
 })
 const fileList = ref<SelectImageFile[]>([])
 const readFile = new FileReader()
@@ -104,7 +111,8 @@ const imgSize = ref({
 })
 const loading = ref(false)
 const pressLock = ref(false)
-const isFile = ref(true)
+
+useLocalConfig(LOCAL_STORAGE_KEY.pressImgConfig, pressConfig)
 
 onMounted(() => {
     readFile.addEventListener('load', (e) => {
@@ -207,27 +215,31 @@ async function outputImg() {
     if (pressLock.value) {
         return
     }
+    const { dirPath, outPath, scale, rate, isFile } = pressConfig.value
     // 校验输出路径
     if (!pressConfig.value.outPath) {
-        ElMessage({
+        ElMessage.warning({
             message: '请选择输出路径！',
-            type: 'warning',
+        })
+        return
+    }
+    if (outPath.includes(dirPath) && outPath !== dirPath) {
+        ElMessage.error({
+            message: '输出路径包含输入路径！',
         })
         return
     }
     try {
-        if (isFile.value) {
+        if (isFile) {
             // 校验文件
             if (!fileList.value.length) {
-                ElMessage({
+                ElMessage.warning({
                     message: '请选择文件！',
-                    type: 'warning',
                 })
                 return
             }
             pressLock.value = true
 
-            const { scale, rate } = pressConfig.value
             // 输出
             const configs: BatchPressImgAndOutputByPathType[] =
                 fileList.value.map(({ path, width, height }) => {
@@ -247,7 +259,6 @@ async function outputImg() {
             await window.HandleImageModule.batchPressImgAndOutputByPath(configs)
         } else {
             // 文件夹方式
-
             if (!pressConfig.value.dirPath) {
                 ElMessage({
                     message: '请选择输入路径！',
@@ -256,7 +267,6 @@ async function outputImg() {
                 return
             }
             pressLock.value = true
-            const { dirPath, outPath, scale, rate } = pressConfig.value
             await window.HandleImageModule.pressImgAndOutputByDir(
                 dirPath,
                 outPath,
@@ -269,11 +279,7 @@ async function outputImg() {
             message: '成功',
         })
     } catch (error) {
-        ElMessage.error({
-            message: `${error}`,
-        })
         pressLock.value = false
-        console.log('🚀 ~ error:', error)
     }
 }
 </script>
