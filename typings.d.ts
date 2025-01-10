@@ -1,7 +1,9 @@
-import 'umi/typings';
+import 'umi/typings'
 
 declare global {
-  interface Window {
-    $api: any;
-  }
+    interface Window {
+        $api: {
+            platform: any
+        }
+    }
 }

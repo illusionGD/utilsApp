@@ -1,21 +1,13 @@
-import { Link, Outlet } from 'umi';
-import styles from './index.less';
+import SideBar from '@/components/sideBar'
+import { Outlet } from 'umi'
+import styles from './index.scss'
+import '../assets/css/global.scss'
 
 export default function Layout() {
-  return (
-    <div className={styles.navs}>
-      <ul>
-        <li>
-          <Link to="/">Home</Link>
-        </li>
-        <li>
-          <Link to="/docs">Docs</Link>
-        </li>
-        <li>
-          <a href="https://github.com/umijs/umi">Github</a>
-        </li>
-      </ul>
-      <Outlet />
-    </div>
-  );
+    return (
+        <div className={styles.layout}>
+            <SideBar></SideBar>
+            <Outlet></Outlet>
+        </div>
+    )
 }
