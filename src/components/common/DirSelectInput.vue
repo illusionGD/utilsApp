@@ -51,6 +51,7 @@ onMounted(() => {
 })
 
 function onPathChange() {
+    // 路径后补\字符
     if (curDirPath.value && isDir.value) {
         if (!/\\/.test(curDirPath.value[curDirPath.value.length - 1])) {
             curDirPath.value += '\\'

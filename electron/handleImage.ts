@@ -95,12 +95,17 @@ export async function batchPressImgAndOutputByPath(
     configs: BatchPressImgAndOutputByPathType[]
 ) {
     const pressProcess: PressOutputConfig[] = []
+    const sameNameArr = []
     for (let index = 0; index < configs.length; index++) {
-        const { path } = configs[index]
+        const { path, outDirPath } = configs[index]
         const type = await getImgTypeByPath(path)
         const { name, ext } = await parse(path)
+
         if (!type) {
             return
+        }
+        // const newOut
+        if (path + name + ext === outDirPath) {
         }
         pressProcess.push({
             ...configs[index],

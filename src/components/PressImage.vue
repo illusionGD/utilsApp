@@ -145,6 +145,7 @@ function filesChange(files) {
         currentFile.value = null
     }
 }
+
 /**监听选择图片 */
 function onSelectChange(index) {
     const file = fileList.value[index]
@@ -153,6 +154,7 @@ function onSelectChange(index) {
         readFile.readAsDataURL(file)
     }
 }
+
 /**绘图 */
 async function drawCanvasImg() {
     const { scale, rate } = pressConfig.value
