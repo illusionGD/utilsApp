@@ -6,7 +6,7 @@ export default defineConfig({
     electron: {
         // 打包配置
         builder: {
-            targets: Platform.WINDOWS.createTarget(['nsis'], Arch.arm64),
+            targets: Platform.WINDOWS.createTarget(['nsis'], Arch.x64),
             config: {
                 nsis: {
                     oneClick: false, // 是否一键安装
