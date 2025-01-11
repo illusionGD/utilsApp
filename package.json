@@ -1,52 +1,54 @@
 {
-    "name": "utilsApp",
-    "version": "1.0.2",
-    "scripts": {
-        "dev": "umi dev",
-        "build": "rimraf dist && umi build",
-        "postinstall": "umi setup",
-        "setup": "umi setup",
-        "start": "npm run dev",
-        "commit": "git add . && git-cz && git push --follow-tags"
-    },
-    "dependencies": {
-        "antd": "^5.23.0",
-        "clear-module": "^4.1.2",
-        "umi": "^4.0.42"
-    },
-    "devDependencies": {
-        "@tsconfig/node14": "^1.0.3",
-        "@types/react": "^18.0.0",
-        "@types/react-dom": "^18.0.0",
-        "@umijs/plugin-electron": "^0.2.0",
-        "@umijs/plugins": "^4.4.4",
-        "chokidar": "^4.0.3",
-        "commitizen": "^4.3.1",
-        "cz-conventional-changelog": "^3.3.0",
-        "electron": "23.1.1",
-        "lodash": "^4.17.21",
-        "rimraf": "^6.0.1",
-        "sass": "^1.83.1",
-        "typescript": "^4.1.2"
-    },
-    "publishConfig": {
-        "access": "public",
-        "registry": "https://registry.npmjs.org"
-    },
-    "files": [
-        "src/**/*",
-        "tsconfig.json",
-        ".npmrc",
-        ".gitignore",
-        "README.md",
-        ".umirc.ts",
-        "package.json",
-        "typings.d.ts"
-    ],
-    "config": {
-        "commitizen": {
-            "path": "./node_modules/cz-conventional-changelog",
-            "global": "umi"
-        }
+  "name": "utilsApp",
+  "version": "1.0.2",
+  "scripts": {
+    "dev": "umi dev",
+    "build": "rimraf dist && umi build",
+    "postinstall": "umi setup",
+    "setup": "umi setup",
+    "start": "npm run dev",
+    "commit": "git add . && git-cz && git push --follow-tags"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^5.5.2",
+    "antd": "^5.23.0",
+    "clear-module": "^4.1.2",
+    "umi": "^4.0.42"
+  },
+  "devDependencies": {
+    "@tsconfig/node14": "^1.0.3",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@umijs/plugin-electron": "^0.2.0",
+    "@umijs/plugins": "^4.4.4",
+    "chokidar": "^4.0.3",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "electron": "23.1.1",
+    "lodash": "^4.17.21",
+    "rimraf": "^6.0.1",
+    "sass": "^1.83.1",
+    "typescript": "^4.1.2",
+    "tailwindcss": "^3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "files": [
+    "src/**/*",
+    "tsconfig.json",
+    ".npmrc",
+    ".gitignore",
+    "README.md",
+    ".umirc.ts",
+    "package.json",
+    "typings.d.ts"
+  ],
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog",
+      "global": "umi"
     }
+  }
 }
