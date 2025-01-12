@@ -24,7 +24,7 @@ export default function Layout() {
                     <TopBreadcrumb></TopBreadcrumb>
                 </div>
                 <div
-                    className="overflow-auto h-full"
+                    className="overflow-auto h-full py-2"
                     style={{
                         height: 'calc(100vh - 50px)',
                     }}
