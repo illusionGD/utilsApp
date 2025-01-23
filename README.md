@@ -1,9 +1,34 @@
-# 简介
+# react-vite-electron
 
-# 技术栈
+An Electron application with React and TypeScript
 
-| 名称       | 说明                                               |
-| -------- | ------------------------------------------------ |
-| electron |                                                  |
-| umi      | 文档：https://umijs.org/docs/guides/getting-started |
-| antd     | umi中的配置：https://umijs.org/docs/max/antd          |
+## Recommended IDE Setup
+
+- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+
+## Project Setup
+
+### Install
+
+```bash
+$ npm install
+```
+
+### Development
+
+```bash
+$ npm run dev
+```
+
+### Build
+
+```bash
+# For windows
+$ npm run build:win
+
+# For macOS
+$ npm run build:mac
+
+# For Linux
+$ npm run build:linux
+```
