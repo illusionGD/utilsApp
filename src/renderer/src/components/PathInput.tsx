@@ -1,23 +1,28 @@
 import { FolderOutlined } from '@ant-design/icons'
 import { getFileOrDirPath } from '@renderer/apis'
 import { ShowOpenDialogType } from '@renderer/types'
-import {  isInvalid } from '@renderer/utils'
+import { isInvalid } from '@renderer/utils'
 import { Input } from 'antd'
 import { memo, useEffect, useMemo, useState } from 'react'
 interface PropsType extends Omit<ShowOpenDialogType, 'multi'> {
-    path: string
+    value?: string
+    isDir?: boolean
+    placeholder?: string
     onChange?: (path: string) => void
 }
 
 const PathInput = (props: PropsType) => {
-    const pathVal = useMemo(() => isInvalid(props.path) ? props.defaultPath : props.path, [props.path])
+    const pathVal = useMemo(() => {
+        return isInvalid(props.value) ? props.defaultPath : props.value
+    }, [props.value])
 
     function changePath(path: string) {
         props.onChange && props.onChange(path)
     }
 
     function getDirPath() {
-        getFileOrDirPath(props).then((paths) => {
+        console.log('🚀 ~ props.isDir:', props.isDir)
+        getFileOrDirPath(props, props.isDir).then((paths) => {
             changePath(paths[0])
         })
     }
@@ -28,6 +33,7 @@ const PathInput = (props: PropsType) => {
                 addonBefore={<FolderOutlined onClick={getDirPath} />}
                 value={pathVal || ''}
                 allowClear
+                placeholder={props.placeholder}
                 onChange={(e) => changePath(e.target.value)}
             />
         </div>
@@ -35,7 +41,9 @@ const PathInput = (props: PropsType) => {
 }
 
 function areEqual(prevProps: Readonly<PropsType>, nextProps: Readonly<PropsType>) {
-    return !(prevProps.defaultPath !== nextProps.defaultPath || prevProps.path !== nextProps.path)
+    const keyArr: Array<keyof PropsType> = ['defaultPath', 'value', 'isDir', 'placeholder']
+    return keyArr.every((key) => prevProps[key] !== nextProps[key])
+    return !(prevProps.defaultPath !== nextProps.defaultPath || prevProps.value !== nextProps.value)
     //    return false
 }
 

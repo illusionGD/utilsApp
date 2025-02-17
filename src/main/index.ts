@@ -40,9 +40,9 @@ function createWindow(): void {
 
 function initHandleEvent() {
     for (const key in api) {
-        ipcMain.handle(key, async (event, args) => {
+        ipcMain.handle(key, async (event, ...args) => {
             try {
-                const data = await api[key](args)
+                const data = await api[key](...args)
                 return data
             } catch (err: any) {
                 return {

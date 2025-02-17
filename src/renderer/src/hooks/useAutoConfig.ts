@@ -1,6 +1,6 @@
-import { getLocalstorage, setLocalstorage } from "@renderer/utils";
-import { useEffect, useState } from "react";
-import { useImmer } from ".";
+import { getLocalstorage, setLocalstorage } from '@renderer/utils'
+import { useEffect, useState } from 'react'
+import { useImmer } from '.'
 
 /**自动初始化&保存本地配置 */
 export function useAutoLocalConfig<T>(key: string, formData: T) {
@@ -16,10 +16,10 @@ export function useAutoLocalConfig<T>(key: string, formData: T) {
     }
 
     const state = useImmer<T>(formData)
-
+    // 更新本地配置
     useEffect(() => {
         setLocalstorage(localKey, state[0])
-    },[state[0]])
+    }, [state[0]])
 
     return state
 }
