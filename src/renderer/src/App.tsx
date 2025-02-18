@@ -1,8 +1,7 @@
-import { RouterProvider } from 'react-router'
-import Routers from './router'
+import { RouterProvider, useRoutes } from 'react-router'
+import Routers, { routers } from './router'
 import { theme, message } from 'antd'
 import { Suspense } from 'react'
-
 // 设置全局 message 配置
 message.config({
     duration: 3, // 显示时间 2 秒
@@ -21,7 +20,6 @@ function App(): JSX.Element {
                 color: token.colorPrimaryText
             }}
         >
-            {/* <Routers></Routers> */}
             <Suspense>
                 <RouterProvider router={Routers}></RouterProvider>
             </Suspense>

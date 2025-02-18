@@ -1,28 +1,39 @@
-import { routers } from '@renderer/router'
+import { routers, RouteType } from '@renderer/router'
+import { addUtilsRouter, setCurrentTabs, utilsCurrentTabs } from '@renderer/store/utilsStore'
 import { Menu, MenuProps } from 'antd'
-import React, { useState } from 'react'
-import { useLocation, useNavigate, useRoutes } from 'react-router'
+import React, { useMemo, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router'
 
 type Props = {}
 type MenuItem = Required<MenuProps>['items'][number]
 
-function UtilsMenu({}: Props) {
-    const [collapsed, setCollapsed] = useState(true)
-    const nav = useNavigate()
-    const route = useLocation()
-    const utilsMenuList = routers.find(r => r.path === '/utils')?.children || []
-    const items: MenuItem[] = utilsMenuList.map(({path, name, icon}) => {
-        return {
+function formatMenuList(routes: RouteType[]): MenuItem[] {
+    return routes.map(({ path, name, icon, children }) => {
+        const menu = {
             key: path,
             label: name,
             icon
         }
+        if (children && children.length) {
+            menu['children'] = formatMenuList(children)
+        }
+        return menu
     })
-    const [defaultSelectedKey] = useState<string>(route.pathname.split('/').slice(0,3).join('/'))
-    console.log("🚀 ~ defaultSelectedKey", defaultSelectedKey)
+}
+const utilsMenuList = routers.find((r) => r.path === '/utils')?.children || []
+const items: MenuItem[] = formatMenuList(utilsMenuList)
 
-    function onSelect({key}) {
-        console.log("🚀 ~ key:", key)
+function UtilsMenu({}: Props) {
+    const [collapsed, setCollapsed] = useState(false)
+    const nav = useNavigate()
+    const currentRoute = useSelector(utilsCurrentTabs)
+    const dispatch = useDispatch()
+    const defaultSelectedKey = useMemo(() => currentRoute || '', [currentRoute])
+
+    function onSelect({ key }) {
+        dispatch(addUtilsRouter(key))
+        dispatch(setCurrentTabs(key))
         key && nav(key)
     }
 
@@ -33,6 +44,7 @@ function UtilsMenu({}: Props) {
                 mode="inline"
                 inlineCollapsed={collapsed}
                 items={items}
+                selectedKeys={[defaultSelectedKey]}
                 onSelect={onSelect}
             />
         </div>
