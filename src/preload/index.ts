@@ -1,6 +1,6 @@
 import { contextBridge, dialog, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { pressDirImage, pressSingleImg } from './image'
+import { batchPressImage, pressDirImage, pressSingleImg, batchPressImageToDir } from './image'
 import { getResForm } from './utils'
 
 export interface MainResType<T> {
@@ -16,7 +16,9 @@ export const api = {
         return getResForm(data)
     },
     pressSingleImg,
-    pressDirImage
+    pressDirImage,
+    batchPressImage,
+    batchPressImageToDir
 }
 
 /** 挂载到window上的api类型 */

@@ -9,6 +9,12 @@ body {
     align-items: center;
 }
 
+.flex-row-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .flex-column-center {
     display: flex;
     flex-direction: column;
@@ -22,4 +28,15 @@ body {
 
 .w-100-percent {
     width: 100%;
+}
+
+.scroll-min {
+    &::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        background-color: #3a3a3a80;
+    }
 }

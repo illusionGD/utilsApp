@@ -1,8 +1,10 @@
-import { PlusOutlined } from '@ant-design/icons'
-import { pressDirImageApi } from '@renderer/apis'
+import { batchPressImageApi, batchPressImageToDirApi, pressDirImageApi } from '@renderer/apis'
 import PathInput from '@renderer/components/PathInput'
+import SelectImageList from '@renderer/components/SelectImageList'
+import { useImmer } from '@renderer/hooks'
 import { useAutoLocalConfig } from '@renderer/hooks/useAutoConfig'
-import { Button, Form, InputNumber, Radio, Switch } from 'antd'
+import { isSucCode } from '@renderer/utils'
+import { Button, Form, InputNumber, List, message, Radio, Switch } from 'antd'
 import { CheckboxGroupProps } from 'antd/es/checkbox'
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 
@@ -32,7 +34,6 @@ const PressImage = (props: Props) => {
     }, [pressPressImageForm])
 
     const [form] = Form.useForm()
-
     /**监听表单变化 */
     const onFormValChange = useCallback((e) => {
         setForm((draft) => {
@@ -52,29 +53,9 @@ const PressImage = (props: Props) => {
         () => pressPressImageForm.pathType === 'dir',
         [pressPressImageForm.pathType]
     )
-
-    /**渲染输出路径输入框 */
-    const renderOutput = () => {
-        return pressPressImageForm.isOpenOutput ? (
-            <Form.Item<FieldType>
-                label={null}
-                name="outputPath"
-                rules={[{ required: true, message: '请输入文件或文件夹路径' }]}
-            >
-                <PathInput isDir placeholder="文件夹路径"></PathInput>
-            </Form.Item>
-        ) : (
-            <></>
-        )
-    }
-
     const renderSingleItem = () => {
         return !isDir ? (
-            <Form.Item<FieldType> label="选择图片">
-                <Button type="primary" shape="circle">
-                    <PlusOutlined />
-                </Button>
-            </Form.Item>
+            <></>
         ) : (
             <Form.Item<FieldType>
                 label="输入路径"
@@ -91,23 +72,98 @@ const PressImage = (props: Props) => {
         )
     }
 
+    const [multiImageList, setMultiImageList] = useImmer<
+        {
+            title: string
+            path: string
+            icon?: string
+        }[]
+    >([])
+    const onFileChange = useCallback((list) => {
+        setMultiImageList((draft) => {
+            draft.length = 0
+            draft.push(...list)
+        })
+    }, [])
+    useEffect(() => {
+        console.log('multiImageList', multiImageList)
+    }, [multiImageList])
+
+    /**渲染输出路径输入框 */
+    const renderOutput = () => {
+        return pressPressImageForm.isOpenOutput ? (
+            <Form.Item<FieldType>
+                label={null}
+                name="outputPath"
+                rules={[{ required: true, message: '请输入文件或文件夹路径' }]}
+            >
+                <PathInput isDir placeholder="文件夹路径"></PathInput>
+            </Form.Item>
+        ) : (
+            <></>
+        )
+    }
+
+    const [loading, setLoading] = useState(false)
     /** 压缩 */
-    const onPress = useCallback(({ inputPath, outputPath, scale, rate }: FieldType) => {
-        pressDirImageApi({
-            inputPath,
+    const onPress = async ({ inputPath, outputPath, scale, rate }: FieldType) => {
+        const commonParam = {
             outputPath: outputPath || inputPath,
             scale,
             quality: rate
-        }).then((res) => {
-            console.log('🚀 ~ res:', res)
-        })
-    }, [])
+        }
+        setLoading(true)
+        let res: any = null
+        // 压缩文件夹图片
+        if (isDir) {
+            res = await pressDirImageApi({
+                inputPath,
+                ...commonParam
+            })
+        } else if (!isDir && pressPressImageForm.isOpenOutput) {
+            if (!multiImageList.length) {
+                message.warning('请选择图片')
+                setLoading(false)
+                return
+            }
+            // 批量压缩图片到目标文件夹
+            res = await batchPressImageToDirApi(
+                multiImageList.map(({ path }) => {
+                    return {
+                        ...commonParam,
+                        inputPath: path
+                    }
+                }),
+                outputPath
+            )
+        } else {
+            // 批量压缩原图片
+            res = await batchPressImageApi(
+                multiImageList.map(({ path }) => {
+                    return {
+                        ...commonParam,
+                        inputPath: path,
+                        outputPath: path
+                    }
+                })
+            )
+        }
+        setLoading(false)
+
+        const { code, data } = res
+        if (isSucCode(code)) {
+            message.success(
+                `总数：${data.count} 成功：${data.successCount} 失败：${data.failCount}`
+            )
+        }
+    }
+
     return (
         <div>
             <Form
                 form={form}
                 name="basic"
-                labelCol={{ span: 3 }}
+                labelCol={{ span: 2 }}
                 wrapperCol={{ span: 16 }}
                 initialValues={pressPressImageForm}
                 onFinish={onPress}
@@ -130,11 +186,18 @@ const PressImage = (props: Props) => {
                 {renderOutput()}
 
                 <Form.Item label={null}>
-                    <Button type="primary" htmlType="submit">
+                    <Button type="primary" htmlType="submit" loading={loading}>
                         压缩
                     </Button>
                 </Form.Item>
             </Form>
+            <div
+                style={{
+                    display: isDir ? 'none' : 'block'
+                }}
+            >
+                <SelectImageList onChange={onFileChange}></SelectImageList>
+            </div>
         </div>
     )
 }

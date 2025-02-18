@@ -1,9 +1,6 @@
-import PathInput from '@renderer/components/PathInput'
-import { useAutoLocalConfig } from '@renderer/hooks/useAutoConfig'
 import { routers } from '@renderer/router'
-import { Button, Card, Form, InputNumber } from 'antd'
+import { Card } from 'antd'
 import Meta from 'antd/es/card/Meta'
-import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router'
 
 type Props = {}
@@ -11,7 +8,7 @@ type Props = {}
 const Image = (props: Props) => {
     const nav = useNavigate()
     const location = useLocation()
-    console.log("🚀 ~ location:", location)
+    console.log('🚀 ~ location:', location)
     const imagePageList =
         routers
             .find((item) => item.path === '/utils')
@@ -23,18 +20,12 @@ const Image = (props: Props) => {
             </Card>
         )
     })
-        console.log("🚀 ~ imagePageList:", imagePageList)
     function toPage(path?: string) {
-        console.log("🚀 ~ path:", path)
+        console.log('🚀 ~ path:', path)
         path && nav(path)
     }
 
-    return (
-        <div>
-            {location.pathname === '/utils/image' ? ImageItemList : <Outlet></Outlet>}
-            
-        </div>
-    )
+    return <div>{location.pathname === '/utils/image' ? ImageItemList : <Outlet></Outlet>}</div>
 }
 
 export default Image

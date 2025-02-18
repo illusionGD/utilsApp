@@ -1,15 +1,11 @@
-import { ShowOpenDialogType } from '@renderer/types'
-import { isSucCode } from '@renderer/utils'
+import { PressImageParamsType, ShowOpenDialogType } from '@renderer/types'
+import { clamp, isSucCode } from '@renderer/utils'
 import { message } from 'antd'
-// 设置全局 message 配置
-message.config({
-    duration: 3, // 显示时间 2 秒
-    maxCount: 3 // 最大同时显示 3 条
-})
-export function handleIpcMainRes<T>(res: { code: string; data: T; message?: string }) {
+
+export function checkError<T>(res: { code: string; data: T; message?: string }) {
     // 统一处理报错
     if (!isSucCode(res.code)) {
-        console.log('🚀 ~ error.message:', res.message)
+        console.log('🚀 ~ res:', res)
         message.error(res.message)
     }
 
@@ -22,7 +18,7 @@ export function handleIpcMainRes<T>(res: { code: string; data: T; message?: stri
  * @param isDir 是否为文件夹
  * @returns
  */
-export async function getFileOrDirPath(
+export async function getFileOrDirPathApi(
     { multi, filters }: ShowOpenDialogType,
     isDir: boolean = false
 ) {
@@ -37,7 +33,7 @@ export async function getFileOrDirPath(
         properties
     })
     const data =
-        handleIpcMainRes<{
+        checkError<{
             canceled: boolean
             filePaths: string[]
         }>(res) || []
@@ -45,17 +41,56 @@ export async function getFileOrDirPath(
     return data.filePaths
 }
 
-export async function pressDirImageApi(params: {
-    outputPath: string
-    inputPath: string
-    scale?: number
-    quality?: number
-}) {
+function formatPressImageParam(params: PressImageParamsType) {
     const { inputPath, outputPath, scale, quality } = params
+    return {
+        inputPath,
+        outputPath,
+        opt: { scale: clamp(scale || 100, 1, 100), quality: clamp(quality || 100, 1, 100) }
+    }
+}
 
-    const res = await window.api.pressDirImage(inputPath, outputPath, { scale, quality })
+export async function pressDirImageApi(params: PressImageParamsType) {
+    const { inputPath, outputPath, opt } = formatPressImageParam(params)
 
-    const data = handleIpcMainRes(res)
+    const res = await window.api.pressDirImage(inputPath, outputPath, opt)
 
-    return data
+    checkError(res)
+
+    return res
+}
+
+/**
+ * 批量压缩图片到目标文件夹
+ * @param list
+ * @param dirPath
+ */
+export async function batchPressImageToDirApi(list: PressImageParamsType[], dirPath: string) {
+    const res = await window.api.batchPressImageToDir(
+        list.map((item) => {
+            const { inputPath, opt } = formatPressImageParam(item)
+            return {
+                input: inputPath,
+                opt
+            }
+        }),
+        dirPath
+    )
+    checkError(res)
+    return res
+}
+
+export async function batchPressImageApi(list: PressImageParamsType[]) {
+    const res = await window.api.batchPressImage(
+        list.map((item) => {
+            const { inputPath, outputPath, opt } = formatPressImageParam(item)
+            return {
+                input: inputPath,
+                output: outputPath,
+                opt
+            }
+        })
+    )
+    checkError(res)
+    return res
 }

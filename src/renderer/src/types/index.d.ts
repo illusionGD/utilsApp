@@ -11,6 +11,12 @@ export interface ShowOpenDialogType {
 }
 
 export interface AnyObject {
-    [key: string | number|symbol]: any
+    [key: string | number | symbol]: any
 }
 
+export interface PressImageParamsType {
+    outputPath: string
+    inputPath: string
+    scale?: number
+    quality?: number
+}

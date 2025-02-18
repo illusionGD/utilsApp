@@ -1,9 +1,10 @@
 import { FolderOutlined } from '@ant-design/icons'
-import { getFileOrDirPath } from '@renderer/apis'
+import { getFileOrDirPathApi } from '@renderer/apis'
+import { useComponentKeyMemo } from '@renderer/hooks'
 import { ShowOpenDialogType } from '@renderer/types'
 import { isInvalid } from '@renderer/utils'
 import { Input } from 'antd'
-import { memo, useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 interface PropsType extends Omit<ShowOpenDialogType, 'multi'> {
     value?: string
     isDir?: boolean
@@ -21,8 +22,7 @@ const PathInput = (props: PropsType) => {
     }
 
     function getDirPath() {
-        console.log('🚀 ~ props.isDir:', props.isDir)
-        getFileOrDirPath(props, props.isDir).then((paths) => {
+        getFileOrDirPathApi(props, props.isDir).then((paths) => {
             changePath(paths[0])
         })
     }
@@ -40,11 +40,9 @@ const PathInput = (props: PropsType) => {
     )
 }
 
-function areEqual(prevProps: Readonly<PropsType>, nextProps: Readonly<PropsType>) {
-    const keyArr: Array<keyof PropsType> = ['defaultPath', 'value', 'isDir', 'placeholder']
-    return keyArr.every((key) => prevProps[key] !== nextProps[key])
-    return !(prevProps.defaultPath !== nextProps.defaultPath || prevProps.value !== nextProps.value)
-    //    return false
-}
-
-export default memo(PathInput, areEqual)
+export default useComponentKeyMemo<PropsType>(PathInput, [
+    'defaultPath',
+    'value',
+    'isDir',
+    'placeholder'
+])
