@@ -1,6 +1,6 @@
 import { batchPressImageApi, batchPressImageToDirApi, pressDirImageApi } from '@renderer/apis'
 import PathInput from '@renderer/components/PathInput'
-import SelectImageList from '@renderer/components/SelectImageList'
+import SelectImageList from '@renderer/components/image/SelectImageList'
 import { useImmer } from '@renderer/hooks'
 import { useAutoLocalConfig } from '@renderer/hooks/useAutoConfig'
 import { isSucCode } from '@renderer/utils'
@@ -112,6 +112,11 @@ const PressImage = (props: Props) => {
             scale,
             quality: rate
         }
+
+        if (loading) {
+            return
+        }
+
         setLoading(true)
         let res: any = null
         // 压缩文件夹图片

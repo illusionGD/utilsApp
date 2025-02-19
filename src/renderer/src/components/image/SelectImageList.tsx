@@ -1,14 +1,15 @@
 import { DeleteOutlined, PlusOutlined, FileAddOutlined } from '@ant-design/icons'
 import { useComponentKeyMemo, useImmer } from '@renderer/hooks'
 import { formatFileSize } from '@renderer/utils'
-import { Button, List } from 'antd'
-import React, { useCallback, useEffect } from 'react'
+import { Button, List, Image as AntdImage } from 'antd'
+import React, { useCallback, useEffect, useRef } from 'react'
 
 type listItemType = {
     title: string
     path: string
     icon?: string
     size?: string
+    url?: string
 }
 
 type PropsType = {
@@ -26,12 +27,17 @@ function SelectImageList(props: PropsType) {
         const filesList = e.target.files as FileList
         setMultiImageList((draft) => {
             for (let index = 0; index < filesList.length; index++) {
-                const { path, name, size } = filesList[index]
+                const file = filesList[index]
+                const { path, name, size } = file
                 if (!draft.find((item) => item.path === path)) {
+                    const url = URL.createObjectURL(file)
+                    const img = new Image()
+                    img.src = url
                     draft.push({
                         path,
                         title: name,
-                        size: formatFileSize(size)
+                        size: formatFileSize(size),
+                        url
                     })
                 }
             }
@@ -88,7 +94,7 @@ function SelectImageList(props: PropsType) {
             <div
                 className="scroll-min"
                 style={{
-                    height: '300px',
+                    height: '500px',
                     overflowY: 'auto'
                 }}
             >
@@ -97,6 +103,14 @@ function SelectImageList(props: PropsType) {
                     dataSource={multiImageList}
                     renderItem={(item, index) => (
                         <List.Item>
+                            <AntdImage
+                                src={item.url}
+                                width={80}
+                                height={80}
+                                style={{
+                                    objectFit: 'cover'
+                                }}
+                            />
                             <List.Item.Meta
                                 title={
                                     <>
@@ -111,6 +125,9 @@ function SelectImageList(props: PropsType) {
                                     </>
                                 }
                                 description={item.path}
+                                style={{
+                                    marginLeft: 10
+                                }}
                             />
                             <div>
                                 <DeleteOutlined

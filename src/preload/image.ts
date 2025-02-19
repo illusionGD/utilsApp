@@ -161,3 +161,16 @@ export async function pressDirImage(inputDir: string, outputDir: string, opt: Pr
         return getResForm({ failCount: 0, successCount: 0, count: 0 }, '', error.message)
     }
 }
+
+export async function getImageBuffer(pathList: string[]) {
+    for (let index = 0; index < pathList.length; index++) {
+        const path = pathList[index];
+        const isExist = existsSync(path)
+        const isDir = statSync(path).isDirectory()
+        if (!isExist || isDir) {
+            continue
+        }
+
+        
+    }
+}

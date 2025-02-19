@@ -27,7 +27,9 @@ const UtilsIndex = (props: Props) => {
         })
     }, [routeList])
     useEffect(() => {
-        dispatch(setCurrentTabs(items.length ? items[items.length - 1].key : ''))
+        if (!routeList.includes(currentRoute)) {
+            dispatch(setCurrentTabs(items.length ? items[items.length - 1].key : ''))
+        }
     }, [routeList])
 
     const dispatch = useDispatch()
@@ -49,6 +51,7 @@ const UtilsIndex = (props: Props) => {
 
     return (
         <div
+            className="min-h-screen"
             style={{
                 display: 'flex'
             }}

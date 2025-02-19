@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, createBrowserRouter } from 'react-router'
-import { FileImageOutlined } from '@ant-design/icons'
+import { FileImageOutlined, FileOutlined } from '@ant-design/icons'
+import FileName from '@renderer/views/utils/fileName'
 export interface RouteType {
     path: string
     element: any
@@ -41,11 +42,7 @@ export const routers: RouteType[] = [
                 path: '/utils/image',
                 name: '图片',
                 icon: <FileImageOutlined />,
-                element: (
-                    <Suspense>
-                        <Image></Image>
-                    </Suspense>
-                ),
+                element: <Suspense></Suspense>,
                 children: [
                     {
                         path: '/utils/image/pressImage',
@@ -62,6 +59,23 @@ export const routers: RouteType[] = [
                         element: (
                             <Suspense>
                                 <Sprites></Sprites>
+                            </Suspense>
+                        )
+                    }
+                ]
+            },
+            {
+                path: '/utils/file',
+                name: '文件',
+                icon: <FileOutlined />,
+                element: <Suspense></Suspense>,
+                children: [
+                    {
+                        path: '/utils/file/fileName',
+                        name: '修改文件名',
+                        element: (
+                            <Suspense>
+                                <FileName></FileName>
                             </Suspense>
                         )
                     }

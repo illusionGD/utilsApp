@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router'
 type Props = {}
 
 function Index({}: Props) {
-
     const nav = useNavigate()
     function toPage(path: string) {
         if (!path) {
@@ -29,7 +28,7 @@ function Index({}: Props) {
     }
 
     return (
-        <div className="">
+        <div className="min-h-screen">
             <div className="flex-column-center">{initCardList()}</div>
         </div>
     )

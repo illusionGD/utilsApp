@@ -42,6 +42,7 @@ function UtilsMenu({}: Props) {
             <Menu
                 defaultSelectedKeys={[defaultSelectedKey]}
                 mode="inline"
+                theme="dark"
                 inlineCollapsed={collapsed}
                 items={items}
                 selectedKeys={[defaultSelectedKey]}

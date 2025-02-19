@@ -12,7 +12,18 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 colorBgContainer: '#000',
                 colorPrimaryText: '#fff'
             },
-            algorithm: [theme.darkAlgorithm, theme.compactAlgorithm]
+            algorithm: [theme.darkAlgorithm, theme.compactAlgorithm],
+            components: {
+                Menu: {
+                    darkItemSelectedBg: '#131629',
+                    darkItemBg: 'transparent',
+                    darkSubMenuItemBg: 'transparent',
+                    itemPaddingInline: 20,
+                    fontSize: 14,
+                    itemBorderRadius: 0,
+                    iconSize: 14
+                }
+            }
         }}
     >
         <Provider store={store}>
