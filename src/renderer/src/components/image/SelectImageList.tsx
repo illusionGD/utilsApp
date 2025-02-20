@@ -74,6 +74,7 @@ function SelectImageList(props: PropsType) {
                         <input
                             type="file"
                             multiple
+                            accept=".jpg, .jpeg, .png, .gif, .svg, .webp, .tiff"
                             onInput={(e) => {
                                 onFileChange(e)
                             }}

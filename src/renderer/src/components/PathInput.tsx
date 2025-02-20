@@ -14,6 +14,7 @@ interface PropsType extends Omit<ShowOpenDialogType, 'multi'> {
 
 const PathInput = (props: PropsType) => {
     const pathVal = useMemo(() => {
+        console.log('🚀 ~ props.value:', props.value)
         return isInvalid(props.value) ? props.defaultPath : props.value
     }, [props.value])
 

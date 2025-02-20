@@ -35,7 +35,7 @@ export function transformBufferToImg(data: {
     return listenImgLoad(URL.createObjectURL(blob))
 }
 
-export function transformBlobToImg(blob: Blob): Promise<HTMLImageElement> {
+export function transformBlobToImg(blob: Blob) {
     return listenImgLoad(URL.createObjectURL(blob))
 }
 

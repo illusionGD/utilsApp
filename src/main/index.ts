@@ -3,13 +3,12 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { api } from '../preload'
-import { message } from 'antd'
 
 function createWindow(): void {
     // Create the browser window.
     const mainWindow = new BrowserWindow({
-        width: 900,
-        height: 670,
+        width: 1200,
+        height: 800,
         // show: false,
         // autoHideMenuBar: true,
         ...(process.platform === 'linux' ? { icon } : {}),
@@ -51,6 +50,7 @@ function initHandleEvent() {
                     message: 'success'
                 }
             } catch (err: any) {
+                console.log('🚀 ~ err:', err)
                 return {
                     code: '500',
                     data: err,

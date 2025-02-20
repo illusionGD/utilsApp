@@ -1,7 +1,7 @@
 import { dirname, join, parse } from 'path'
 import { existsSync, mkdirSync, readdirSync, renameSync, statSync } from 'fs'
 import { dialog } from 'electron'
-import { getFile } from './file'
+import { forEachDir, getFile } from './file'
 // import sharp from 'sharp'
 const sharp = require('sharp')
 
@@ -18,7 +18,7 @@ interface pressImageListType {
     /** 压缩配置 */
     opt: PressImageOptType
 }
-const supportedFormats = ['.jpg', '.jpeg', '.png', '.webp', '.tiff', '.gif']
+const supportedFormats = ['.jpg', '.jpeg', '.png', '.webp', '.tiff', '.gif', '.svg']
 
 /** 压缩单张图片 */
 export async function pressSingleImg(
@@ -126,6 +126,7 @@ export async function batchPressImageToDir(
  */
 export async function pressDirImage(inputDir: string, outputDir: string, opt: PressImageOptType) {
     const pressQueue: pressImageListType[] = []
+
     const deepDir = function (inputDir: string, outputDir: string, opt: PressImageOptType) {
         const items = readdirSync(inputDir)
 
@@ -160,23 +161,37 @@ export function getImageBuffer(pathList: string[]) {
     )
 }
 
+export async function getDirImageBuffer(dir: string) {
+    const stat = statSync(dir)
+    if (!stat.isDirectory()) {
+        if (stat.isFile()) {
+            const { ext } = parse(dir)
+
+            return supportedFormats.includes(ext) ? getImageBuffer([dir]) : []
+        }
+        return []
+    }
+
+    const pathList: string[] = forEachDir(dir, undefined, supportedFormats)
+    console.log('🚀 ~ pathList:', pathList)
+
+    return getImageBuffer(pathList)
+}
+
 /**
- * blob转图片
- * @param blob
+ * buffer转图片
+ * @param buffer
  * @param path 输出路径：xxx\xxx\xx.png
  */
-export function blobToImg(blob: Blob, path: string) {
-    blob.arrayBuffer().then((arrayBuffer) => {
-        const buffer = Buffer.from(arrayBuffer) // ArrayBuffer 转 Buffer
-        return new Promise((resolve, reject) => {
-            sharp(buffer)
-                .toFile(path)
-                .then(() => {
-                    resolve(true)
-                })
-                .catch((err) => {
-                    reject(false)
-                })
-        })
+export function bufferToImg(buffer: ArrayBuffer, path: string) {
+    return new Promise((resolve, reject) => {
+        sharp(buffer)
+            .toFile(path)
+            .then(() => {
+                resolve(true)
+            })
+            .catch((err) => {
+                reject(false)
+            })
     })
 }

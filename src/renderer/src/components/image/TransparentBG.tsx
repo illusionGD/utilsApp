@@ -14,15 +14,19 @@ import React, {
     useState,
     forwardRef
 } from 'react'
-
+export interface RenderImgListType {
+    data: Buffer | Blob | HTMLImageElement | string
+    type: IMG_EXT_ENUM
+}
 type Props = {
     width?: number
     height?: number
-    imgList?: { data: Buffer | Blob | HTMLImageElement | string; type: IMG_EXT_ENUM }[]
+    imgList?: RenderImgListType[]
 }
 
 export interface TransparentBGImperativeHandleType {
     outputBlob?: () => Promise<Blob | null>
+    clearCanvas?: () => void
 }
 
 function TransparentBG({ width = 1012, height = 550, imgList }: Props, ref) {
@@ -42,6 +46,7 @@ function TransparentBG({ width = 1012, height = 550, imgList }: Props, ref) {
         renderImgList()
     }, [imgList])
 
+    /** 输出blob */
     const outputBlob = (): Promise<Blob | null> => {
         return new Promise((reolve, reject) => {
             contentCanvas.current?.toBlob((blob) => {
@@ -54,11 +59,20 @@ function TransparentBG({ width = 1012, height = 550, imgList }: Props, ref) {
         })
     }
 
+    const clearCanvas = () => {
+        if (!contentCanvas.current) {
+            return
+        }
+        const ctx = contentCanvas.current.getContext('2d')
+        ctx?.clearRect(0, 0, width, height)
+    }
+
     // 暴露出去的方法
     useImperativeHandle(
         ref,
         (): TransparentBGImperativeHandleType => ({
-            outputBlob
+            outputBlob,
+            clearCanvas
         })
     )
 
@@ -66,31 +80,32 @@ function TransparentBG({ width = 1012, height = 550, imgList }: Props, ref) {
         if (!contentCanvas.current || !imgList) {
             return
         }
+
         const ctx = contentCanvas.current.getContext('2d')
-        ctx?.clearRect(0, 0, width, height)
+        clearCanvas()
+
         if (!imgList.length) {
             return
         }
-        // ctx.
-        // 转buffer图片，获取image和宽高
-        const list = await Promise.all(
-            imgList.map(({ data, type }) => {
-                if (data instanceof Blob) {
-                    return transformBlobToImg(data)
-                } else if (data instanceof HTMLImageElement) {
-                    return Promise.resolve(data)
-                } else if (typeof data === 'string') {
-                    return listenImgLoad(data)
-                } else {
-                    return transformBufferToImg({ data, type })
-                }
-            })
-        )
-        console.log('🚀 ~ list:', list)
+
+        // 转img
+        const pList = imgList.map(({ data, type }) => {
+            if (data instanceof Blob) {
+                return transformBlobToImg(data)
+            } else if (data instanceof HTMLImageElement) {
+                return Promise.resolve(data)
+            } else if (typeof data === 'string') {
+                return listenImgLoad(data)
+            } else if (data instanceof ArrayBuffer) {
+                return transformBufferToImg({ buffer: data, type })
+            }
+        })
+        const list = await Promise.all(pList)
+
+        // 横向绘制canvas
         let col = 0
         let row = 0
         let maxHeight = 0
-        // 横向绘制canvas
         list.forEach((img) => {
             if (!img) {
                 return
@@ -116,8 +131,6 @@ function TransparentBG({ width = 1012, height = 550, imgList }: Props, ref) {
             }}
         >
             <canvas ref={contentCanvas} width={width} height={height}></canvas>
-            {/* <canvas ref={canvasDom} width={width} height={height}>
-            </canvas> */}
         </div>
     )
 }

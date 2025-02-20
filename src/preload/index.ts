@@ -1,6 +1,13 @@
 import { contextBridge, dialog, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { batchPressImage, pressDirImage, pressSingleImg, batchPressImageToDir } from './image'
+import {
+    batchPressImage,
+    pressDirImage,
+    pressSingleImg,
+    batchPressImageToDir,
+    bufferToImg,
+    getDirImageBuffer
+} from './image'
 import { getFile } from './file'
 
 export interface MainResType<T> {
@@ -19,7 +26,9 @@ export const api = {
     pressDirImage,
     batchPressImage,
     batchPressImageToDir,
-    getFile
+    getFile,
+    bufferToImg,
+    getDirImageBuffer
 }
 type TransformReturnSync<T> = {
     [K in keyof T]: T[K] extends (...args: infer P) => any
