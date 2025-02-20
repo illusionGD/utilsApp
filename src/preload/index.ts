@@ -1,7 +1,7 @@
 import { contextBridge, dialog, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { batchPressImage, pressDirImage, pressSingleImg, batchPressImageToDir } from './image'
-import { getResForm } from './utils'
+import { getFile } from './file'
 
 export interface MainResType<T> {
     code: string
@@ -13,16 +13,24 @@ export interface MainResType<T> {
 export const api = {
     showOpenDialog: async (arg) => {
         const data = await dialog.showOpenDialog(arg)
-        return getResForm(data)
+        return data
     },
     pressSingleImg,
     pressDirImage,
     batchPressImage,
-    batchPressImageToDir
+    batchPressImageToDir,
+    getFile
+}
+type TransformReturnSync<T> = {
+    [K in keyof T]: T[K] extends (...args: infer P) => any
+        ? (
+              ...args: P
+          ) => Promise<{ code: string; data: Awaited<ReturnType<T[K]>>; message: string }>
+        : never
 }
 
 /** 挂载到window上的api类型 */
-export type WindowApiType = typeof api
+export type WindowApiType = TransformReturnSync<typeof api>
 
 /** 获取暴露给main进程的api，用invoke双通信 */
 function getExposeInMainWorld() {

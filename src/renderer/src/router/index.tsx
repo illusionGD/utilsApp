@@ -14,7 +14,6 @@ export interface RouteType {
 
 const Home = lazy(() => import('@renderer/views'))
 const Utils = lazy(() => import('@renderer/views/utils/utilsIndex'))
-const Image = lazy(() => import('@renderer/views/utils/image'))
 const PressImage = lazy(() => import('@renderer/views/utils/pressImage'))
 const Sprites = lazy(() => import('@renderer/views/utils/sprites'))
 

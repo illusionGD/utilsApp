@@ -4,22 +4,25 @@ import { formatFileSize } from '@renderer/utils'
 import { Button, List, Image as AntdImage } from 'antd'
 import React, { useCallback, useEffect, useRef } from 'react'
 
-type listItemType = {
+interface imageListItemType {
     title: string
     path: string
-    icon?: string
-    size?: string
-    url?: string
+    size: number
+    url: string
+    type: string
 }
 
 type PropsType = {
-    defaultList?: listItemType[]
-    onChange?: (list: listItemType[]) => void
+    defaultList?: imageListItemType[]
+    onChange?: (list: imageListItemType[]) => void
 }
 
 function SelectImageList(props: PropsType) {
-    const [multiImageList, setMultiImageList] = useImmer<listItemType[]>(props.defaultList || [])
+    const [multiImageList, setMultiImageList] = useImmer<imageListItemType[]>(
+        props.defaultList || []
+    )
     useEffect(() => {
+        console.log('🚀 ~ multiImageList:', multiImageList)
         props.onChange && props.onChange(multiImageList)
     }, [multiImageList])
 
@@ -28,16 +31,15 @@ function SelectImageList(props: PropsType) {
         setMultiImageList((draft) => {
             for (let index = 0; index < filesList.length; index++) {
                 const file = filesList[index]
-                const { path, name, size } = file
+                const { path, name, size, type } = file
                 if (!draft.find((item) => item.path === path)) {
                     const url = URL.createObjectURL(file)
-                    const img = new Image()
-                    img.src = url
                     draft.push({
-                        path,
                         title: name,
-                        size: formatFileSize(size),
-                        url
+                        url,
+                        size,
+                        path,
+                        type
                     })
                 }
             }
@@ -120,7 +122,7 @@ function SelectImageList(props: PropsType) {
                                                 color: '#8c8c8c'
                                             }}
                                         >
-                                            ({item.size})
+                                            ({formatFileSize(item.size)})
                                         </span>
                                     </>
                                 }

@@ -3,6 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { api } from '../preload'
+import { message } from 'antd'
 
 function createWindow(): void {
     // Create the browser window.
@@ -38,16 +39,22 @@ function createWindow(): void {
     }
 }
 
+/** 统一处理事件结果和错误 */
 function initHandleEvent() {
     for (const key in api) {
         ipcMain.handle(key, async (event, ...args) => {
             try {
                 const data = await api[key](...args)
-                return data
+                return {
+                    code: '100',
+                    data,
+                    message: 'success'
+                }
             } catch (err: any) {
                 return {
                     code: '500',
-                    data: err
+                    data: err,
+                    message: err && err.message
                 }
             }
         })

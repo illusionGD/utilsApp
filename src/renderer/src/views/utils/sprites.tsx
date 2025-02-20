@@ -1,10 +1,13 @@
 import PathInput from '@renderer/components/PathInput'
 import SelectImageList from '@renderer/components/image/SelectImageList'
-import TransparentBG from '@renderer/components/image/TransparentBG'
+import TransparentBG, {
+    TransparentBGImperativeHandleType
+} from '@renderer/components/image/TransparentBG'
+import { useImmer } from '@renderer/hooks'
 import { useAutoLocalConfig } from '@renderer/hooks/useAutoConfig'
 import { Button, Form, Radio } from 'antd'
 import { CheckboxGroupProps } from 'antd/es/checkbox'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 type Props = {}
 type FieldType = {
@@ -61,11 +64,39 @@ function Sprites({}: Props) {
         }
     }, [])
 
-    const onFileChange = useCallback(() => {}, [])
+    // 图片列表
+    const [imgList, setImgList] = useState<any[]>([])
+    useEffect(() => {
+        console.log('🚀 ~ imgList:', imgList)
+    }, [imgList])
+    const onFileChange = useCallback((list: any[]) => {
+        setImgList(() => {
+            return list.map(({ url, type }) => {
+                return {
+                    data: url,
+                    type: type.split('/')[1]
+                }
+            })
+        })
+    }, [])
 
+    // 输出图片逻辑
     const [loading, setLoading] = useState(false)
+    const canvasRef = useRef<TransparentBGImperativeHandleType>(null)
+    const onFinish = async () => {
+        if (loading) {
+            return
+        }
 
-    const onFinish = () => {}
+        setLoading(() => true)
+
+        if (canvasRef.current && canvasRef.current.outputBlob) {
+            const blob = await canvasRef.current?.outputBlob()
+            console.log('🚀 ~ buffer:', blob)
+        }
+
+        setLoading(() => false)
+    }
     return (
         <div>
             <Form
@@ -96,7 +127,7 @@ function Sprites({}: Props) {
                     </Button>
                 </Form.Item>
             </Form>
-            <TransparentBG></TransparentBG>
+            <TransparentBG ref={canvasRef} imgList={imgList}></TransparentBG>
             <div
                 style={{
                     display: isDir ? 'none' : 'block'

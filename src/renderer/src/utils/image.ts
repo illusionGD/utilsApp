@@ -1,5 +1,11 @@
-// 绘制网格
-export function drawGrid(canvas: HTMLCanvasElement, size = 8) {
+import { IMG_EXT_ENUM } from '@renderer/constants'
+
+/**
+ * 绘制ps透明背景
+ * @param canvas
+ * @param size 格子大小
+ */
+export function drawTransparentBG(canvas: HTMLCanvasElement, size = 8) {
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     const width = canvas.width
     const height = canvas.height
@@ -16,4 +22,31 @@ export function drawGrid(canvas: HTMLCanvasElement, size = 8) {
             ctx.fillRect(x, y, size, size)
         }
     }
+
+    return canvas.toDataURL()
+}
+
+export function transformBufferToImg(data: {
+    buffer: Buffer
+    type: IMG_EXT_ENUM
+}): Promise<HTMLImageElement> {
+    const blob = new Blob([data.buffer], { type: `image/${data.type}` })
+
+    return listenImgLoad(URL.createObjectURL(blob))
+}
+
+export function transformBlobToImg(blob: Blob): Promise<HTMLImageElement> {
+    return listenImgLoad(URL.createObjectURL(blob))
+}
+
+/** 监听图片加载完成 */
+export function listenImgLoad(url: string): Promise<HTMLImageElement> {
+    const img = new Image()
+    img.src = url
+
+    return new Promise((resolve, reject) => {
+        img.onload = () => {
+            resolve(img)
+        }
+    })
 }

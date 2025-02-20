@@ -28,7 +28,7 @@ export function clamp(num: number, min: number, max: number) {
 }
 
 export function formatFileSize(size: number): string {
-    if (size <= 0) return '0 B'
+    if (!size || size <= 0) return '0 B'
 
     const units = ['B', 'KB', 'MB', 'GB', 'TB']
     const base = 1024

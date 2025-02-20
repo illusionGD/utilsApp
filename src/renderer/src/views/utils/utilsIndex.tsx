@@ -21,7 +21,17 @@ const UtilsIndex = (props: Props) => {
             const { name, path, element } = findRouteItem(route) as RouteType
             return {
                 label: name,
-                children: element,
+                children: (
+                    <div
+                        className="scroll-min"
+                        style={{
+                            maxHeight: '90vh',
+                            overflowY: 'auto'
+                        }}
+                    >
+                        {element}
+                    </div>
+                ),
                 key: path
             }
         })
@@ -51,7 +61,6 @@ const UtilsIndex = (props: Props) => {
 
     return (
         <div
-            className="min-h-screen"
             style={{
                 display: 'flex'
             }}
@@ -64,6 +73,7 @@ const UtilsIndex = (props: Props) => {
                 }}
             >
                 <Tabs
+                    className="hide-scroll"
                     hideAdd
                     type="editable-card"
                     activeKey={activeKey}

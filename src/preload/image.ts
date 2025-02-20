@@ -1,8 +1,7 @@
-import { dirname, join, parse, resolve } from 'path'
-import { MainResType } from '.'
-import { getResForm } from './utils'
+import { dirname, join, parse } from 'path'
 import { existsSync, mkdirSync, readdirSync, renameSync, statSync } from 'fs'
 import { dialog } from 'electron'
+import { getFile } from './file'
 // import sharp from 'sharp'
 const sharp = require('sharp')
 
@@ -26,61 +25,56 @@ export async function pressSingleImg(
     input: string,
     output: string,
     opt: PressImageOptType
-): Promise<MainResType<any>> {
-    try {
-        const { scale, quality } = opt
-        const { ext } = parse(input)
-        if (!supportedFormats.includes(ext)) {
-            return getResForm(null, '')
-        }
-
-        const { width, height, format } = await sharp(input).metadata()
-        if (!format) {
-            return getResForm(null, '')
-        }
-        // 支持的图片格式
-        // 缩放
-        const newWidth = (width || 0) * (scale || 1)
-        const newHeight = (height || 0) * (scale || 1)
-
-        let outPath = output
-
-        if (input === output) {
-            const { name, ext, dir } = parse(output)
-            outPath = join(dir, `${name}.temp${ext}`)
-        } else {
-            // 创建输出目录（如果不存在）
-            const outputDir = dirname(output)
-            if (!existsSync(outputDir)) {
-                mkdirSync(outputDir, { recursive: true })
-            }
-        }
-
-        // 压缩
-        const res = await new Promise((resolve, reject) => {
-            sharp(input)
-                .resize({
-                    width: newWidth,
-                    height: newHeight
-                })
-                [format]({ quality })
-                .toFile(outPath, (err, info) => {
-                    if (err) {
-                        reject(err)
-                    } else {
-                        resolve(info)
-                    }
-                })
-        })
-
-        if (!(res instanceof Error)) {
-            renameSync(outPath, output)
-        }
-
-        return getResForm(res)
-    } catch (error) {
-        return getResForm(error, '')
+): Promise<any> {
+    const { scale, quality } = opt
+    const { ext } = parse(input)
+    if (!supportedFormats.includes(ext)) {
+        return
     }
+
+    const { width, height, format } = await sharp(input).metadata()
+    if (!format) {
+        return
+    }
+    // 缩放
+    const newWidth = (width || 0) * (scale || 1)
+    const newHeight = (height || 0) * (scale || 1)
+
+    let outPath = output
+
+    if (input === output) {
+        const { name, ext, dir } = parse(output)
+        outPath = join(dir, `${name}.temp${ext}`)
+    } else {
+        // 创建输出目录（如果不存在）
+        const outputDir = dirname(output)
+        if (!existsSync(outputDir)) {
+            mkdirSync(outputDir, { recursive: true })
+        }
+    }
+
+    // 压缩
+    const res = await new Promise((resolve, reject) => {
+        sharp(input)
+            .resize({
+                width: newWidth,
+                height: newHeight
+            })
+            [format]({ quality })
+            .toFile(outPath, (err, info) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve(info)
+                }
+            })
+    })
+
+    if (!(res instanceof Error)) {
+        renameSync(outPath, output)
+    }
+
+    return res
 }
 
 /** 批量压缩图片 */
@@ -100,7 +94,7 @@ export async function batchPressImage(list: pressImageListType[]) {
         }
     })
 
-    return getResForm({ count: resList.length, successCount, failCount })
+    return { count: resList.length, successCount, failCount }
 }
 
 /**
@@ -131,46 +125,58 @@ export async function batchPressImageToDir(
  * @param opt 压缩配置
  */
 export async function pressDirImage(inputDir: string, outputDir: string, opt: PressImageOptType) {
-    try {
-        const pressQueue: pressImageListType[] = []
-        const deepDir = function (inputDir: string, outputDir: string, opt: PressImageOptType) {
-            const items = readdirSync(inputDir)
+    const pressQueue: pressImageListType[] = []
+    const deepDir = function (inputDir: string, outputDir: string, opt: PressImageOptType) {
+        const items = readdirSync(inputDir)
 
-            items.forEach((item) => {
-                const itemPath = join(inputDir, item)
-                const outPath = join(outputDir, item)
-                const stats = statSync(itemPath)
+        items.forEach((item) => {
+            const itemPath = join(inputDir, item)
+            const outPath = join(outputDir, item)
+            const stats = statSync(itemPath)
 
-                if (stats.isDirectory()) {
-                    // 如果是文件夹，递归处理
-                    deepDir(itemPath, outPath, opt)
-                } else if (stats.isFile()) {
-                    pressQueue.push({
-                        input: itemPath,
-                        output: outPath,
-                        opt
-                    })
-                }
-            })
-        }
-
-        deepDir(inputDir, outputDir, opt)
-
-        return batchPressImage(pressQueue)
-    } catch (error: any) {
-        return getResForm({ failCount: 0, successCount: 0, count: 0 }, '', error.message)
+            if (stats.isDirectory()) {
+                // 如果是文件夹，递归处理
+                deepDir(itemPath, outPath, opt)
+            } else if (stats.isFile()) {
+                pressQueue.push({
+                    input: itemPath,
+                    output: outPath,
+                    opt
+                })
+            }
+        })
     }
+
+    deepDir(inputDir, outputDir, opt)
+
+    return batchPressImage(pressQueue)
 }
 
-export async function getImageBuffer(pathList: string[]) {
-    for (let index = 0; index < pathList.length; index++) {
-        const path = pathList[index];
-        const isExist = existsSync(path)
-        const isDir = statSync(path).isDirectory()
-        if (!isExist || isDir) {
-            continue
-        }
+export function getImageBuffer(pathList: string[]) {
+    return Promise.all(
+        pathList.map((path) => {
+            return getFile(path)
+        })
+    )
+}
 
-        
-    }
+/**
+ * blob转图片
+ * @param blob
+ * @param path 输出路径：xxx\xxx\xx.png
+ */
+export function blobToImg(blob: Blob, path: string) {
+    blob.arrayBuffer().then((arrayBuffer) => {
+        const buffer = Buffer.from(arrayBuffer) // ArrayBuffer 转 Buffer
+        return new Promise((resolve, reject) => {
+            sharp(buffer)
+                .toFile(path)
+                .then(() => {
+                    resolve(true)
+                })
+                .catch((err) => {
+                    reject(false)
+                })
+        })
+    })
 }
