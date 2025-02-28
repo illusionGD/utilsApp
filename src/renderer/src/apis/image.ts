@@ -1,6 +1,7 @@
 import { PressImageParamsType } from '@renderer/types'
-import { checkError } from '.'
-import { clamp } from '@renderer/utils'
+import { checkError, getFileOrDirPathApi } from '.'
+import { clamp, formatFileSize } from '@renderer/utils'
+import { IMG_EXT_ENUM, IMG_EXT_LIST } from '@renderer/constants'
 
 function formatPressImageParam(params: PressImageParamsType) {
     const { inputPath, outputPath, scale, quality } = params
@@ -11,6 +12,9 @@ function formatPressImageParam(params: PressImageParamsType) {
     }
 }
 
+/**
+ * 压缩文件夹下的图片
+ */
 export async function pressDirImageApi(params: PressImageParamsType) {
     const { inputPath, outputPath, opt } = formatPressImageParam(params)
 
@@ -41,6 +45,11 @@ export async function batchPressImageToDirApi(list: PressImageParamsType[], dirP
     return res
 }
 
+/**
+ * 批量压缩图片
+ * @param list
+ * @param dirPath
+ */
 export async function batchPressImageApi(list: PressImageParamsType[]) {
     const res = await window.api.batchPressImage(
         list.map((item) => {
@@ -56,4 +65,28 @@ export async function batchPressImageApi(list: PressImageParamsType[]) {
     return res
 }
 
-export function getImageFiles() {}
+/** 选择图片 */
+export async function selectImageFiles() {
+    const pathList = await getFileOrDirPathApi(
+        {
+            multi: true,
+            filters: [
+                {
+                    extensions: IMG_EXT_LIST
+                }
+            ]
+        },
+        false
+    )
+
+    const { data } = await window.api.getImageBuffer(pathList)
+    return data.map((item) => {
+        if (item) {
+            const { ext, name, data, path } = item
+            const type = `image/${ext.replace('.', '')}`
+            const blob = new Blob([data], { type })
+            return { name, data: blob, path, size: blob.size, type }
+        }
+        return null
+    })
+}

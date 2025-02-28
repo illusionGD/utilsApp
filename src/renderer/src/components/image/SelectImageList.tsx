@@ -1,4 +1,5 @@
 import { DeleteOutlined, PlusOutlined, FileAddOutlined } from '@ant-design/icons'
+import { selectImageFiles } from '@renderer/apis'
 import { useComponentKeyMemo, useImmer } from '@renderer/hooks'
 import { formatFileSize } from '@renderer/utils'
 import { Button, List, Image as AntdImage } from 'antd'
@@ -22,33 +23,34 @@ function SelectImageList(props: PropsType) {
         props.defaultList || []
     )
     useEffect(() => {
-        console.log('🚀 ~ multiImageList:', multiImageList)
         props.onChange && props.onChange(multiImageList)
     }, [multiImageList])
 
-    const onFileChange = useCallback((e) => {
-        const filesList = e.target.files as FileList
+    const onSelectImgs = async () => {
+        const list = await selectImageFiles()
         setMultiImageList((draft) => {
-            for (let index = 0; index < filesList.length; index++) {
-                const file = filesList[index]
-                const { path, name, size, type } = file
-                if (!draft.find((item) => item.path === path)) {
-                    const url = URL.createObjectURL(file)
-                    draft.push({
-                        title: name,
-                        url,
-                        size,
-                        path,
-                        type
-                    })
+            for (let index = 0; index < list.length; index++) {
+                const file = list[index]
+                if (file) {
+                    const { path, name, size, type, data } = file
+                    if (!draft.find((item) => item.path === path)) {
+                        const url = URL.createObjectURL(data)
+                        draft.push({
+                            title: name,
+                            url,
+                            size,
+                            path,
+                            type
+                        })
+                    }
                 }
             }
         })
-    }, [])
+    }
 
     const clearImageList = useCallback(() => {
         setMultiImageList((draft) => {
-            draft.splice(0)
+            draft.length = 0
         })
     }, [])
 
@@ -69,25 +71,14 @@ function SelectImageList(props: PropsType) {
             >
                 <span>图片列表：{multiImageList.length}张</span>
                 <div>
-                    <Button type="primary" color="default" variant="link" size="large">
+                    <Button
+                        type="primary"
+                        color="default"
+                        variant="link"
+                        size="large"
+                        onClick={onSelectImgs}
+                    >
                         <FileAddOutlined />
-                        <input
-                            type="file"
-                            multiple
-                            accept=".jpg, .jpeg, .png, .gif, .svg, .webp, .tiff"
-                            onInput={(e) => {
-                                onFileChange(e)
-                            }}
-                            style={{
-                                display: 'block',
-                                width: '100%',
-                                height: '100%',
-                                opacity: 0,
-                                position: 'absolute',
-                                cursor: 'pointer',
-                                appearance: 'none'
-                            }}
-                        />
                     </Button>
                     <Button color="default" variant="link" size="large" onClick={clearImageList}>
                         <DeleteOutlined />
@@ -111,7 +102,7 @@ function SelectImageList(props: PropsType) {
                                 width={80}
                                 height={80}
                                 style={{
-                                    objectFit: 'cover'
+                                    objectFit: 'contain'
                                 }}
                             />
                             <List.Item.Meta

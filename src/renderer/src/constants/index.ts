@@ -7,3 +7,14 @@ export enum IMG_EXT_ENUM {
     webp = 'webp',
     tiff = 'tiff'
 }
+function getImgExtList() {
+    const imgExtList: string[] = []
+    for (const key in IMG_EXT_ENUM) {
+        if (Object.prototype.hasOwnProperty.call(IMG_EXT_ENUM, key)) {
+            imgExtList.push('.' + IMG_EXT_ENUM[key])
+        }
+    }
+
+    return imgExtList
+}
+export const IMG_EXT_LIST = getImgExtList()

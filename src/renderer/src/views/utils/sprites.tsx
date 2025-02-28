@@ -2,6 +2,7 @@ import { checkError } from '@renderer/apis'
 import PathInput from '@renderer/components/PathInput'
 import SelectImageList from '@renderer/components/image/SelectImageList'
 import TransparentBG, {
+    FillImageTypeEnum,
     RenderImgListType,
     TransparentBGImperativeHandleType
 } from '@renderer/components/image/TransparentBG'
@@ -9,7 +10,7 @@ import { IMG_EXT_ENUM } from '@renderer/constants'
 import { useImmer } from '@renderer/hooks'
 import { useAutoLocalConfig } from '@renderer/hooks/useAutoConfig'
 import { isInvalid, isSucCode } from '@renderer/utils'
-import { Button, Form, message, Radio } from 'antd'
+import { Button, Form, message, Radio, Select } from 'antd'
 import { CheckboxGroupProps } from 'antd/es/checkbox'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -21,6 +22,9 @@ type FieldType = {
     isOpenOutput: boolean
     outputPath: string
     name: string
+    canvasWith: number
+    canvasHeight: number
+    adapterType: FillImageTypeEnum
 }
 
 function Sprites({}: Props) {
@@ -31,8 +35,12 @@ function Sprites({}: Props) {
         isOpenOutput: true,
         isSingle: true,
         outputPath: '',
-        name: '_sprites'
+        name: 'sprites',
+        canvasWith: 200,
+        canvasHeight: 200,
+        adapterType: FillImageTypeEnum.ROW
     })
+
     const radioGroup: CheckboxGroupProps<string>['options'] = [
         { label: '文件夹', value: 'dir' },
         { label: '文件', value: 'file' }
@@ -40,10 +48,13 @@ function Sprites({}: Props) {
     const isDir = useMemo(() => spritesForm.pathType === 'dir', [spritesForm.pathType])
     const [dirImgList, setDirImgList] = useState<RenderImgListType[]>([])
     const [fileImageList, setFileImageList] = useState<RenderImgListType[]>([])
-    const imgList = useMemo(
-        () => (isDir ? dirImgList : fileImageList),
-        [isDir, fileImageList, dirImgList]
-    )
+    const imgList = useMemo(() => {
+        const newList = isDir ? dirImgList : fileImageList
+        return newList
+    }, [isDir, fileImageList, dirImgList])
+    useEffect(() => {
+        console.log('🚀 ~ imgList:', imgList)
+    }, [imgList])
 
     const renderSingleItem = () => {
         return !isDir ? (
@@ -64,10 +75,6 @@ function Sprites({}: Props) {
         )
     }
 
-    // 监听输入路径变化
-    useEffect(() => {
-        getDirImage()
-    }, [spritesForm.inputPath])
     const getDirImage = () => {
         if (!spritesForm.inputPath) {
             canvasRef.current?.clearCanvas && canvasRef.current.clearCanvas()
@@ -93,6 +100,11 @@ function Sprites({}: Props) {
             })
         })
     }
+
+    // 监听输入路径变化
+    useEffect(() => {
+        getDirImage()
+    }, [spritesForm.inputPath])
     /**监听表单变化 */
     const onFormValChange = useCallback((e: FieldType) => {
         setForm((draft) => {
@@ -101,13 +113,7 @@ function Sprites({}: Props) {
     }, [])
 
     // 图片列表
-    useEffect(() => {
-        console.log('🚀 ~ imgList:', imgList)
-    }, [imgList])
     const onFileChange = useCallback((list: any[]) => {
-        if (!imgList.length && !list.length) {
-            return
-        }
         setFileImageList(() => {
             return list.map(({ url, type }) => {
                 return {
@@ -118,7 +124,23 @@ function Sprites({}: Props) {
         })
     }, [])
 
-    // 输出图片逻辑
+    // 适配模式
+    const adapterList: Array<{ value: FillImageTypeEnum; label: string }> = [
+        {
+            label: '行',
+            value: FillImageTypeEnum.ROW
+        },
+        {
+            label: '列',
+            value: FillImageTypeEnum.COL
+        }
+        // {
+        //     label: '固定宽高',
+        //     value: FillImageTypeEnum.WH
+        // }
+    ]
+
+    //#region 输出图片逻辑
     const [loading, setLoading] = useState(false)
     const canvasRef = useRef<TransparentBGImperativeHandleType>(null)
     const onFinish = async () => {
@@ -148,6 +170,7 @@ function Sprites({}: Props) {
 
         setLoading(() => false)
     }
+    //#endregion
     return (
         <div>
             <Form
@@ -170,19 +193,34 @@ function Sprites({}: Props) {
                 >
                     <PathInput isDir placeholder="文件夹路径"></PathInput>
                 </Form.Item>
-
+                <Form.Item label="适配模式" name="adapterType">
+                    <Select
+                        defaultValue={spritesForm.adapterType}
+                        style={{ width: 120 }}
+                        options={adapterList}
+                    />
+                </Form.Item>
                 <Form.Item label={null}>
                     <Button type="primary" htmlType="submit" loading={loading}>
                         生成精灵图
                     </Button>
                 </Form.Item>
                 <Form.Item>
-                    <TransparentBG
-                        ref={canvasRef}
-                        imgList={imgList}
-                        width={200}
-                        height={200}
-                    ></TransparentBG>
+                    <div
+                        className="scroll-min"
+                        style={{
+                            maxWidth: '100%',
+                            maxHeight: '500px',
+                            overflow: 'auto',
+                            padding: '5px'
+                        }}
+                    >
+                        <TransparentBG
+                            ref={canvasRef}
+                            imgList={imgList}
+                            fillImageType={spritesForm.adapterType}
+                        ></TransparentBG>
+                    </div>
                     <div
                         style={{
                             display: isDir ? 'none' : 'block'

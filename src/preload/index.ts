@@ -6,7 +6,8 @@ import {
     pressSingleImg,
     batchPressImageToDir,
     bufferToImg,
-    getDirImageBuffer
+    getDirImageBuffer,
+    getImageBuffer
 } from './image'
 import { getFile } from './file'
 
@@ -28,7 +29,8 @@ export const api = {
     batchPressImageToDir,
     getFile,
     bufferToImg,
-    getDirImageBuffer
+    getDirImageBuffer,
+    getImageBuffer
 }
 type TransformReturnSync<T> = {
     [K in keyof T]: T[K] extends (...args: infer P) => any
