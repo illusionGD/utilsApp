@@ -61,7 +61,9 @@ function TransparentBG(props: Props, ref) {
 
     //#region 触发渲染逻辑
     useEffect(() => {
-        renderBg(cWH.width, cWH.height)
+        renderBg()
+    }, [])
+    useEffect(() => {
         renderImgList()
     }, [cWH.width, cWH.height])
     useEffect(() => {
@@ -163,10 +165,10 @@ function TransparentBG(props: Props, ref) {
 
     //#region 渲染逻辑
     /** 渲染透明背景 */
-    const renderBg = (width: number, height: number) => {
+    const renderBg = () => {
         const canvas = document.createElement('canvas')
-        canvas.width = width
-        canvas.height = height
+        canvas.width = 16
+        canvas.height = 16
         setBgUrl(() => {
             return drawTransparentBG(canvas as HTMLCanvasElement)
         })
