@@ -260,12 +260,22 @@ function Sprites({}: Props) {
                 ></SpritesPreview>
             </Card>
             <Card style={cardStyle}>
-                <TransparentBG
-                    ref={canvasRef}
-                    imgList={imgList}
-                    fillImageType={spritesForm.adapterType}
-                    onImgRender={onImgRender}
-                ></TransparentBG>
+                <div
+                    className="scroll-min"
+                    style={{
+                        maxHeight: '250px',
+                        maxWidth: '80%',
+                        overflow: 'auto',
+                        padding: '5px 0'
+                    }}
+                >
+                    <TransparentBG
+                        ref={canvasRef}
+                        imgList={imgList}
+                        fillImageType={spritesForm.adapterType}
+                        onImgRender={onImgRender}
+                    ></TransparentBG>
+                </div>
             </Card>
             <div
                 style={{

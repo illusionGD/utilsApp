@@ -72,6 +72,7 @@ export async function selectImageFiles() {
             multi: true,
             filters: [
                 {
+                    name: 'Images',
                     extensions: IMG_EXT_LIST
                 }
             ]
