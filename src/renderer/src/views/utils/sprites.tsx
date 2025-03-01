@@ -1,16 +1,18 @@
 import { checkError } from '@renderer/apis'
 import PathInput from '@renderer/components/PathInput'
 import SelectImageList from '@renderer/components/image/SelectImageList'
+import SpritesPreview from '@renderer/components/image/SpritesPreview'
 import TransparentBG, {
     FillImageTypeEnum,
     RenderImgListType,
+    TransparentBGImgDataType,
     TransparentBGImperativeHandleType
 } from '@renderer/components/image/TransparentBG'
-import { IMG_EXT_ENUM } from '@renderer/constants'
+import { IMG_EXT_ENUM, UTILS_CARD_STYLE } from '@renderer/constants'
 import { useImmer } from '@renderer/hooks'
 import { useAutoLocalConfig } from '@renderer/hooks/useAutoConfig'
 import { isInvalid, isSucCode } from '@renderer/utils'
-import { Button, Form, message, Radio, Select } from 'antd'
+import { Button, Card, Form, Input, message, Radio, Select } from 'antd'
 import { CheckboxGroupProps } from 'antd/es/checkbox'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -45,9 +47,21 @@ function Sprites({}: Props) {
         { label: '文件夹', value: 'dir' },
         { label: '文件', value: 'file' }
     ]
+    // 适配模式
+    const adapterList: Array<{ value: FillImageTypeEnum; label: string }> = [
+        {
+            label: '行',
+            value: FillImageTypeEnum.ROW
+        },
+        {
+            label: '列',
+            value: FillImageTypeEnum.COL
+        }
+    ]
     const isDir = useMemo(() => spritesForm.pathType === 'dir', [spritesForm.pathType])
     const [dirImgList, setDirImgList] = useState<RenderImgListType[]>([])
     const [fileImageList, setFileImageList] = useState<RenderImgListType[]>([])
+    const cardStyle = UTILS_CARD_STYLE
     const imgList = useMemo(() => {
         const newList = isDir ? dirImgList : fileImageList
         return newList
@@ -124,21 +138,34 @@ function Sprites({}: Props) {
         })
     }, [])
 
-    // 适配模式
-    const adapterList: Array<{ value: FillImageTypeEnum; label: string }> = [
-        {
-            label: '行',
-            value: FillImageTypeEnum.ROW
-        },
-        {
-            label: '列',
-            value: FillImageTypeEnum.COL
+    //#region css代码
+    const [previewData, setPreviewData] = useImmer({
+        fWidth: 0,
+        fHeight: 0,
+        imageUrl: '',
+        duration: 1,
+        frameCount: 0
+    })
+    const onImgRender = (list: TransparentBGImgDataType[], url: string) => {
+        console.log('🚀 ~ TransparentBGImgDataType:', list)
+        if (!list.length) {
+            setPreviewData((draft) => {
+                draft.frameCount = 0
+                draft.imageUrl = ''
+                draft.fHeight = 0
+                draft.fWidth = 0
+            })
+            return
         }
-        // {
-        //     label: '固定宽高',
-        //     value: FillImageTypeEnum.WH
-        // }
-    ]
+        const { w, h } = list[0]
+        setPreviewData((draft) => {
+            draft.frameCount = list.length
+            draft.imageUrl = url
+            draft.fHeight = h
+            draft.fWidth = w
+        })
+    }
+    //#endregion
 
     //#region 输出图片逻辑
     const [loading, setLoading] = useState(false)
@@ -173,63 +200,82 @@ function Sprites({}: Props) {
     //#endregion
     return (
         <div>
-            <Form
-                form={form}
-                name="basic"
-                wrapperCol={{ span: 16 }}
-                initialValues={spritesForm}
-                onFinish={onFinish}
-                onValuesChange={onFormValChange}
-                autoComplete="off"
-            >
-                <Form.Item label="输入类型" name="pathType">
-                    <Radio.Group options={radioGroup} />
-                </Form.Item>
-                {renderSingleItem()}
-                <Form.Item<FieldType>
-                    label="输出路径"
-                    name="outputPath"
-                    rules={[{ required: true, message: '请输入文件或文件夹路径' }]}
+            <Card style={cardStyle}>
+                <Form
+                    form={form}
+                    name="basic"
+                    labelCol={{ span: 2 }}
+                    wrapperCol={{ span: 6 }}
+                    initialValues={spritesForm}
+                    onFinish={onFinish}
+                    onValuesChange={onFormValChange}
+                    autoComplete="off"
                 >
-                    <PathInput isDir placeholder="文件夹路径"></PathInput>
-                </Form.Item>
-                <Form.Item label="适配模式" name="adapterType">
-                    <Select
-                        defaultValue={spritesForm.adapterType}
-                        style={{ width: 120 }}
-                        options={adapterList}
-                    />
-                </Form.Item>
-                <Form.Item label={null}>
-                    <Button type="primary" htmlType="submit" loading={loading}>
-                        生成精灵图
-                    </Button>
-                </Form.Item>
-                <Form.Item>
-                    <div
-                        className="scroll-min"
-                        style={{
-                            maxWidth: '100%',
-                            maxHeight: '500px',
-                            overflow: 'auto',
-                            padding: '5px'
-                        }}
+                    <Form.Item<FieldType> label="输入类型" name="pathType">
+                        <Radio.Group options={radioGroup} />
+                    </Form.Item>
+                    <Form.Item<FieldType>
+                        label="精灵图名称"
+                        name="name"
+                        rules={[{ required: true, message: '请输入精灵图名称' }]}
                     >
-                        <TransparentBG
-                            ref={canvasRef}
-                            imgList={imgList}
-                            fillImageType={spritesForm.adapterType}
-                        ></TransparentBG>
-                    </div>
-                    <div
-                        style={{
-                            display: isDir ? 'none' : 'block'
-                        }}
+                        <Input
+                            allowClear
+                            placeholder="请输入精灵图名称"
+                            defaultValue={spritesForm.name}
+                        />
+                    </Form.Item>
+                    {renderSingleItem()}
+                    <Form.Item<FieldType>
+                        label="输出路径"
+                        name="outputPath"
+                        rules={[{ required: true, message: '请输入文件或文件夹路径' }]}
                     >
-                        <SelectImageList onChange={onFileChange}></SelectImageList>
-                    </div>
-                </Form.Item>
-            </Form>
+                        <PathInput isDir placeholder="文件夹路径"></PathInput>
+                    </Form.Item>
+                    <Form.Item<FieldType> label="适配模式" name="adapterType">
+                        <Select
+                            defaultValue={spritesForm.adapterType}
+                            style={{ width: 120 }}
+                            options={adapterList}
+                        />
+                    </Form.Item>
+                    <Form.Item label={null}>
+                        <Button type="primary" htmlType="submit" loading={loading}>
+                            生成精灵图
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Card>
+
+            <Card style={cardStyle}>
+                <SpritesPreview
+                    frameCount={previewData.frameCount}
+                    frameHeight={previewData.fHeight}
+                    frameWidth={previewData.fWidth}
+                    imgUrl={previewData.imageUrl}
+                    duration={previewData.duration}
+                    direction={spritesForm.adapterType}
+                    cssName={spritesForm.name}
+                ></SpritesPreview>
+            </Card>
+            <Card style={cardStyle}>
+                <TransparentBG
+                    ref={canvasRef}
+                    imgList={imgList}
+                    fillImageType={spritesForm.adapterType}
+                    onImgRender={onImgRender}
+                ></TransparentBG>
+            </Card>
+            <div
+                style={{
+                    display: isDir ? 'none' : 'block'
+                }}
+            >
+                <Card style={cardStyle}>
+                    <SelectImageList onChange={onFileChange}></SelectImageList>
+                </Card>
+            </div>
         </div>
     )
 }

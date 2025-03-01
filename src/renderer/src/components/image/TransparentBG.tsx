@@ -36,11 +36,19 @@ type Props = {
     imgList?: RenderImgListType[]
     /** 图片填充模式： 适配宽、适配高、固定宽高*/
     fillImageType?: FillImageTypeEnum
+    onImgRender?: (list: TransparentBGImgDataType[], imageUrl: string) => void
 }
 
 export interface TransparentBGImperativeHandleType {
     outputBlob?: () => Promise<Blob | null>
     clearCanvas?: () => void
+}
+
+export interface TransparentBGImgDataType {
+    x: number
+    y: number
+    w: number
+    h: number
 }
 
 const defaultProps = {
@@ -183,16 +191,24 @@ function TransparentBG(props: Props, ref) {
         clearCanvas()
 
         if (!imgInstanceList.length) {
+            props.onImgRender && props.onImgRender([], contentCanvas.current.toDataURL('image/png'))
             return
         }
 
         let col = 0
         let row = 0
         let maxHeight = 0
+        const imgDataList: TransparentBGImgDataType[] = []
 
         imgInstanceList.forEach((img) => {
             if (!img) {
                 return
+            }
+            const data: TransparentBGImgDataType = {
+                x: 0,
+                y: 0,
+                w: img.width,
+                h: img.height
             }
             // 横向绘制canvas
             if (fillImageType === FillImageTypeEnum.ROW) {
@@ -202,17 +218,31 @@ function TransparentBG(props: Props, ref) {
                     maxHeight = 0
                     row = 0
                 }
+
+                data.x = row
+                data.y = col
+
                 ctx?.drawImage(img, row, col)
+
                 row += _width
                 maxHeight = Math.max(_height, maxHeight)
             } else {
                 // 纵向绘制canvas
                 const { width: _width, height: _height } = img
                 col += maxHeight
+
+                data.x = row
+                data.y = col
+
                 ctx?.drawImage(img, row, col)
+
                 maxHeight = _height
             }
+            imgDataList.push(data)
         })
+
+        props.onImgRender &&
+            props.onImgRender(imgDataList, contentCanvas.current.toDataURL('image/png'))
     }
     //#endregion
 

@@ -18,3 +18,5 @@ function getImgExtList() {
     return imgExtList
 }
 export const IMG_EXT_LIST = getImgExtList()
+
+export const UTILS_CARD_STYLE = { width: '100%', marginBottom: '10px' }
