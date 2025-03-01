@@ -20,3 +20,8 @@ function getImgExtList() {
 export const IMG_EXT_LIST = getImgExtList()
 
 export const UTILS_CARD_STYLE = { width: '100%', marginBottom: '10px' }
+export enum PrefixSuffixTypeEnum {
+    NUMBER = 'number',
+    LETTER = 'letter',
+    EMPTY = ''
+}

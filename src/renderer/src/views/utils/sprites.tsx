@@ -66,9 +66,6 @@ function Sprites({}: Props) {
         const newList = isDir ? dirImgList : fileImageList
         return newList
     }, [isDir, fileImageList, dirImgList])
-    useEffect(() => {
-        console.log('🚀 ~ imgList:', imgList)
-    }, [imgList])
 
     const renderSingleItem = () => {
         return !isDir ? (
@@ -147,7 +144,6 @@ function Sprites({}: Props) {
         frameCount: 0
     })
     const onImgRender = (list: TransparentBGImgDataType[], url: string) => {
-        console.log('🚀 ~ TransparentBGImgDataType:', list)
         if (!list.length) {
             setPreviewData((draft) => {
                 draft.frameCount = 0
@@ -264,7 +260,7 @@ function Sprites({}: Props) {
                     className="scroll-min"
                     style={{
                         maxHeight: '250px',
-                        maxWidth: '80%',
+                        maxWidth: '100%',
                         overflow: 'auto',
                         padding: '5px 0'
                     }}

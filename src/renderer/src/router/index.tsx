@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Routes, Route, createBrowserRouter } from 'react-router'
 import { FileImageOutlined, FileOutlined } from '@ant-design/icons'
 import FileName from '@renderer/views/utils/fileName'
+import BitMapFont from '@renderer/views/utils/bitMapFont'
 export interface RouteType {
     path: string
     element: any
@@ -58,6 +59,15 @@ export const routers: RouteType[] = [
                         element: (
                             <Suspense>
                                 <Sprites></Sprites>
+                            </Suspense>
+                        )
+                    },
+                    {
+                        path: '/utils/image/bitMapFont',
+                        name: '位图字体',
+                        element: (
+                            <Suspense>
+                                <BitMapFont></BitMapFont>
                             </Suspense>
                         )
                     }

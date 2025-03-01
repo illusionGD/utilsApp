@@ -136,7 +136,6 @@ function TransparentBG(props: Props, ref) {
             }
         })
         const list = (await Promise.all(pList)) as HTMLImageElement[]
-        console.log('🚀 ~ list:', list)
         setImgInstanceList(() => list)
     }
     //#endregion

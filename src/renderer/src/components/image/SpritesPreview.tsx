@@ -72,7 +72,9 @@ function SpritesPreview(props: Props) {
             <div
                 style={{
                     flex: 1,
-                    height: '100%'
+                    height: '100%',
+                    maxWidth: '50%',
+                    overflow: 'auto'
                 }}
             >
                 {/* 动态 CSS */}

@@ -9,7 +9,7 @@ import {
     getDirImageBuffer,
     getImageBuffer
 } from './image'
-import { getFile } from './file'
+import { getFile, renameFiles } from './file'
 
 export interface MainResType<T> {
     code: string
@@ -30,7 +30,8 @@ export const api = {
     getFile,
     bufferToImg,
     getDirImageBuffer,
-    getImageBuffer
+    getImageBuffer,
+    renameFiles
 }
 type TransformReturnSync<T> = {
     [K in keyof T]: T[K] extends (...args: infer P) => any

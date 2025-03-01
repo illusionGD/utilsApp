@@ -1,3 +1,4 @@
+import { PrefixSuffixTypeEnum } from '@renderer/constants'
 import { PressImageParamsType, ShowOpenDialogType } from '@renderer/types'
 import { clamp, isSucCode } from '@renderer/utils'
 import { message } from 'antd'
@@ -40,4 +41,17 @@ export async function getFileOrDirPathApi(
         }>(res) || []
 
     return data.filePaths
+}
+
+interface RenameFilesOptions {
+    dir: string // 目标文件夹路径
+    newName: string // 新的文件名（中间部分）
+    prefixType?: PrefixSuffixTypeEnum // 前缀类型 ('number' | 'letter')
+    suffixType?: PrefixSuffixTypeEnum // 后缀类型 ('number' | 'letter')
+    startNumber?: number // 数字递增起始值
+    step?: number // 递增步长
+    extensions?: string[] // 需要修改的文件类型（可选）
+}
+export async function renameFilesApi(options: RenameFilesOptions) {
+    return window.api.renameFiles(options)
 }

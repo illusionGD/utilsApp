@@ -97,7 +97,8 @@ const UtilsIndex = (props: Props) => {
             <div
                 style={{
                     padding: '10px',
-                    width: '100%'
+                    width: '100%',
+                    overflow: 'auto'
                 }}
             >
                 <Tabs
