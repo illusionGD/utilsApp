@@ -8,7 +8,7 @@ function formatPressImageParam(params: PressImageParamsType) {
     return {
         inputPath,
         outputPath,
-        opt: { scale: clamp(scale || 100, 1, 100), quality: clamp(quality || 100, 1, 100) }
+        opt: { scale: clamp(scale || 1, 0.1), quality: clamp(quality || 100, 1, 100) }
     }
 }
 

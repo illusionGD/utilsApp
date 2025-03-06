@@ -23,7 +23,21 @@ export function getLocalstorage(key: string) {
     return data ? JSON.parse(data) : data
 }
 
-export function clamp(num: number, min: number, max: number) {
+export function clamp(num: number, min?: number, max?: number) {
+    const hasMin = !(min === undefined)
+    const hasMax = !(max === undefined)
+    if (!hasMin && !hasMax) {
+        return num
+    }
+
+    if (hasMin && !hasMax) {
+        return num > min ? num : min
+    }
+
+    if (!hasMin && hasMax) {
+        return num > max ? max : num
+    }
+    if (hasMin && hasMax)
     return Math.min(Math.max(num, min), max)
 }
 

@@ -109,8 +109,8 @@ const PressImage = (props: Props) => {
     const onPress = async ({ inputPath, outputPath, scale, rate }: FieldType) => {
         const commonParam = {
             outputPath: outputPath || inputPath,
-            scale,
-            quality: rate
+            scale: scale ,
+            quality: rate * 100
         }
 
         if (loading) {

@@ -1,6 +1,5 @@
 import { dirname, join, parse } from 'path'
-import { existsSync, mkdirSync, readdirSync, renameSync, statSync } from 'fs'
-import { dialog } from 'electron'
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, writeFile } from 'fs'
 import { forEachDir, getFile } from './file'
 // import sharp from 'sharp'
 const sharp = require('sharp')
@@ -18,34 +17,65 @@ interface pressImageListType {
     /** 压缩配置 */
     opt: PressImageOptType
 }
-const supportedFormats = ['.jpg', '.jpeg', '.png', '.webp', '.tiff', '.gif', '.svg']
+
+enum IMG_FORMATS_ENUM {
+    png = 'png',
+    jpg = 'jpg',
+    jpeg = 'jpeg',
+    webp = 'webp',
+    avif = 'avif',
+    gif = 'gif',
+}
+
+const supportedFormats: string[] = []
+
+for (const key in IMG_FORMATS_ENUM) {
+    if (Object.prototype.hasOwnProperty.call(IMG_FORMATS_ENUM, key)) {
+        supportedFormats.push('.' + IMG_FORMATS_ENUM[key])
+    }
+}
 
 /** 压缩单张图片 */
 export async function pressSingleImg(
     input: string,
     output: string,
     opt: PressImageOptType
-): Promise<any> {
+): Promise<Error | string> {
     const { scale, quality } = opt
     const { ext } = parse(input)
     if (!supportedFormats.includes(ext)) {
-        return
+        return ''
     }
 
     const { width, height, format } = await sharp(input).metadata()
     if (!format) {
-        return
+        return ''
     }
     // 缩放
     const newWidth = (width || 0) * (scale || 1)
     const newHeight = (height || 0) * (scale || 1)
 
-    let outPath = output
+    const buffer = readFileSync(input)
+    let image = sharp(buffer)
+    const resizeConfig = {
+        width: Math.round(newWidth),
+        height: Math.round(newHeight)
+    }
+    const pressConfig = {quality}
 
-    if (input === output) {
-        const { name, ext, dir } = parse(output)
-        outPath = join(dir, `${name}.temp${ext}`)
+    if (
+        ext.includes(IMG_FORMATS_ENUM.jpeg) ||
+        ext.includes(IMG_FORMATS_ENUM.jpg)
+    ) {
+        image = image.resize(resizeConfig).jpeg(pressConfig)
     } else {
+        const format = ext.split('.')[ext.split('.').length - 1]
+        image = image.resize(resizeConfig)[format](
+            pressConfig
+        )
+    }
+
+    if (input !== output) {
         // 创建输出目录（如果不存在）
         const outputDir = dirname(output)
         if (!existsSync(outputDir)) {
@@ -53,28 +83,17 @@ export async function pressSingleImg(
         }
     }
 
-    // 压缩
-    const res = await new Promise((resolve, reject) => {
-        sharp(input)
-            .resize({
-                width: newWidth,
-                height: newHeight
-            })
-            [format]({ quality })
-            .toFile(outPath, (err, info) => {
-                if (err) {
-                    reject(err)
-                } else {
-                    resolve(info)
-                }
-            })
+    const compressedBuffer = await image.toBuffer()
+
+    return new Promise((resolve, reject) => {
+        writeFile(output, compressedBuffer, (err) => {
+            if (err) {
+                reject(err)
+                return
+            }
+            resolve(output)
+        })
     })
-
-    if (!(res instanceof Error)) {
-        renameSync(outPath, output)
-    }
-
-    return res
 }
 
 /** 批量压缩图片 */
@@ -86,8 +105,8 @@ export async function batchPressImage(list: pressImageListType[]) {
     let failCount = 0
     let successCount = 0
 
-    resList.forEach(({ code }) => {
-        if (code !== '100') {
+    resList.forEach((item) => {
+        if (typeof item !== 'string') {
             failCount += 1
         } else {
             successCount += 1
