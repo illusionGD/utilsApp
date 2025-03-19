@@ -1,3 +1,5 @@
+import { IMG_EXT_ENUM } from '@renderer/constants'
+
 export interface ShowOpenDialogType {
     /** 默认路径 */
     defaultPath?: string
@@ -15,8 +17,14 @@ export interface AnyObject {
 }
 
 export interface PressImageParamsType {
+    /** 输出路径 */
     outputPath: string
+    /** 图片路径 */
     inputPath: string
+    /** 缩放倍率 */
     scale?: number
+    /** 质量 */
     quality?: number
+    /** 目标图片后缀 */
+    targetExt?: IMG_EXT_ENUM
 }

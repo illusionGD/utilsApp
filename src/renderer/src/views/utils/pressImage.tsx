@@ -1,10 +1,11 @@
 import { batchPressImageApi, batchPressImageToDirApi, pressDirImageApi } from '@renderer/apis'
 import PathInput from '@renderer/components/PathInput'
 import SelectImageList from '@renderer/components/image/SelectImageList'
+import { IMG_EXT_ENUM, IMG_EXT_LIST } from '@renderer/constants'
 import { useImmer } from '@renderer/hooks'
 import { useAutoLocalConfig } from '@renderer/hooks/useAutoConfig'
 import { isSucCode } from '@renderer/utils'
-import { Button, Form, InputNumber, List, message, Radio, Switch } from 'antd'
+import { Button, Form, InputNumber, List, message, Radio, Select, Switch } from 'antd'
 import { CheckboxGroupProps } from 'antd/es/checkbox'
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 
@@ -17,6 +18,7 @@ type FieldType = {
     isSingle: boolean
     isOpenOutput: boolean
     outputPath: string
+    targetExt?: IMG_EXT_ENUM | ''
 }
 
 const PressImage = (props: Props) => {
@@ -27,11 +29,19 @@ const PressImage = (props: Props) => {
         scale: 1,
         isOpenOutput: true,
         isSingle: true,
-        outputPath: ''
+        outputPath: '',
+        targetExt: ''
     })
     useEffect(() => {
         console.log('pressPressImageForm', pressPressImageForm)
     }, [pressPressImageForm])
+
+    const extList = ['', ...IMG_EXT_LIST].map((ext) => {
+        return {
+            label: ext || '不转换',
+            value: ext
+        }
+    })
 
     const [form] = Form.useForm()
     /**监听表单变化 */
@@ -106,11 +116,15 @@ const PressImage = (props: Props) => {
 
     const [loading, setLoading] = useState(false)
     /** 压缩 */
-    const onPress = async ({ inputPath, outputPath, scale, rate }: FieldType) => {
+    const onPress = async ({ inputPath, outputPath, scale, rate, targetExt }: FieldType) => {
         const commonParam = {
             outputPath: outputPath || inputPath,
             scale,
-            quality: rate
+            quality: rate * 100
+        }
+
+        if (targetExt) {
+            commonParam['targetExt'] = targetExt
         }
 
         if (loading) {
@@ -184,6 +198,13 @@ const PressImage = (props: Props) => {
                 </Form.Item>
                 <Form.Item<FieldType> label="缩放倍率" name="scale">
                     <InputNumber min={0.1} step={0.1} />
+                </Form.Item>
+                <Form.Item<FieldType> label="格式" name="targetExt" valuePropName="checked">
+                    <Select
+                        defaultValue={pressPressImageForm.targetExt}
+                        style={{ width: 120 }}
+                        options={extList}
+                    />
                 </Form.Item>
                 <Form.Item<FieldType> label="输出路径" name="isOpenOutput" valuePropName="checked">
                     <Switch checkedChildren="开启" unCheckedChildren="关闭" defaultChecked />

@@ -33,7 +33,7 @@ function Sprites({}: Props) {
     const [form] = Form.useForm()
     const [spritesForm, setForm] = useAutoLocalConfig<FieldType>('sprites', {
         inputPath: '',
-        pathType: 'dir',
+        pathType: 'file',
         isOpenOutput: true,
         isSingle: true,
         outputPath: '',
@@ -43,10 +43,10 @@ function Sprites({}: Props) {
         adapterType: FillImageTypeEnum.ROW
     })
 
-    const radioGroup: CheckboxGroupProps<string>['options'] = [
-        { label: '文件夹', value: 'dir' },
-        { label: '文件', value: 'file' }
-    ]
+    // const radioGroup: CheckboxGroupProps<string>['options'] = [
+    //     { label: '文件夹', value: 'dir' },
+    //     { label: '文件', value: 'file' }
+    // ]
     // 适配模式
     const adapterList: Array<{ value: FillImageTypeEnum; label: string }> = [
         {
@@ -196,65 +196,70 @@ function Sprites({}: Props) {
     //#endregion
     return (
         <div>
-            <Card style={cardStyle}>
-                <Form
-                    form={form}
-                    name="basic"
-                    labelCol={{ span: 2 }}
-                    wrapperCol={{ span: 6 }}
-                    initialValues={spritesForm}
-                    onFinish={onFinish}
-                    onValuesChange={onFormValChange}
-                    autoComplete="off"
+            <div className="flex-row-center">
+                <Card style={cardStyle}>
+                    <Form
+                        form={form}
+                        name="basic"
+                        labelCol={{ span: 4 }}
+                        wrapperCol={{ span: 16 }}
+                        initialValues={spritesForm}
+                        onFinish={onFinish}
+                        onValuesChange={onFormValChange}
+                        autoComplete="off"
+                    >
+                        {/* <Form.Item<FieldType> label="输入类型" name="pathType">
+                            <Radio.Group options={radioGroup} />
+                        </Form.Item> */}
+                        <Form.Item<FieldType>
+                            label="精灵图名称"
+                            name="name"
+                            rules={[{ required: true, message: '请输入精灵图名称' }]}
+                        >
+                            <Input
+                                allowClear
+                                placeholder="请输入精灵图名称"
+                                defaultValue={spritesForm.name}
+                            />
+                        </Form.Item>
+                        {renderSingleItem()}
+                        <Form.Item<FieldType>
+                            label="输出路径"
+                            name="outputPath"
+                            rules={[{ required: true, message: '请输入文件或文件夹路径' }]}
+                        >
+                            <PathInput isDir placeholder="文件夹路径"></PathInput>
+                        </Form.Item>
+                        <Form.Item<FieldType> label="适配模式" name="adapterType">
+                            <Select
+                                defaultValue={spritesForm.adapterType}
+                                style={{ width: 120 }}
+                                options={adapterList}
+                            />
+                        </Form.Item>
+                        <Form.Item label={null}>
+                            <Button type="primary" htmlType="submit" loading={loading}>
+                                生成精灵图
+                            </Button>
+                        </Form.Item>
+                    </Form>
+                </Card>
+                <div
+                    style={{
+                        width: '100%',
+                        marginLeft: '10px'
+                    }}
                 >
-                    <Form.Item<FieldType> label="输入类型" name="pathType">
-                        <Radio.Group options={radioGroup} />
-                    </Form.Item>
-                    <Form.Item<FieldType>
-                        label="精灵图名称"
-                        name="name"
-                        rules={[{ required: true, message: '请输入精灵图名称' }]}
-                    >
-                        <Input
-                            allowClear
-                            placeholder="请输入精灵图名称"
-                            defaultValue={spritesForm.name}
-                        />
-                    </Form.Item>
-                    {renderSingleItem()}
-                    <Form.Item<FieldType>
-                        label="输出路径"
-                        name="outputPath"
-                        rules={[{ required: true, message: '请输入文件或文件夹路径' }]}
-                    >
-                        <PathInput isDir placeholder="文件夹路径"></PathInput>
-                    </Form.Item>
-                    <Form.Item<FieldType> label="适配模式" name="adapterType">
-                        <Select
-                            defaultValue={spritesForm.adapterType}
-                            style={{ width: 120 }}
-                            options={adapterList}
-                        />
-                    </Form.Item>
-                    <Form.Item label={null}>
-                        <Button type="primary" htmlType="submit" loading={loading}>
-                            生成精灵图
-                        </Button>
-                    </Form.Item>
-                </Form>
-            </Card>
-
-            <Card style={cardStyle}>
-                <SpritesPreview
-                    frameCount={previewData.frameCount}
-                    frameHeight={previewData.fHeight}
-                    frameWidth={previewData.fWidth}
-                    imgUrl={previewData.imageUrl}
-                    duration={previewData.duration}
-                    direction={spritesForm.adapterType}
-                    cssName={spritesForm.name}
-                ></SpritesPreview>
-            </Card>
+                    <Card style={cardStyle}>
+                        <SelectImageList
+                            styleSheet={{
+                                height: '132px'
+                            }}
+                            onChange={onFileChange}
+                        ></SelectImageList>
+                    </Card>
+                </div>
+            </div>
             <Card style={cardStyle}>
                 <div
                     className="scroll-min"
@@ -273,15 +278,17 @@ function Sprites({}: Props) {
                     ></TransparentBG>
                 </div>
             </Card>
-            <div
-                style={{
-                    display: isDir ? 'none' : 'block'
-                }}
-            >
-                <Card style={cardStyle}>
-                    <SelectImageList onChange={onFileChange}></SelectImageList>
-                </Card>
-            </div>
+            <Card style={cardStyle}>
+                <SpritesPreview
+                    frameCount={previewData.frameCount}
+                    frameHeight={previewData.fHeight}
+                    frameWidth={previewData.fWidth}
+                    imgUrl={previewData.imageUrl}
+                    duration={previewData.duration}
+                    direction={spritesForm.adapterType}
+                    cssName={spritesForm.name}
+                ></SpritesPreview>
+            </Card>
         </div>
     )
 }

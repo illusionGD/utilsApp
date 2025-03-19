@@ -62,7 +62,6 @@ function FileName({}: Props) {
         if (loading) {
             return
         }
-        console.log(fileNameForm)
         const { inputPath, newName, suffixType, prefixType } = fileNameForm
         if (!suffixType && !prefixType) {
             message.error('请选择前缀或后缀')

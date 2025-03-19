@@ -8,6 +8,8 @@ import {
     bufferToImg,
     getDirImageBuffer,
     getImageBuffer
+    // batchImageToOtherExt,
+    // dirImageToOtherExt
 } from './image'
 import { getFile, renameFiles } from './file'
 
@@ -32,6 +34,8 @@ export const api = {
     getDirImageBuffer,
     getImageBuffer,
     renameFiles
+    // batchImageToOtherExt,
+    // dirImageToOtherExt
 }
 type TransformReturnSync<T> = {
     [K in keyof T]: T[K] extends (...args: infer P) => any

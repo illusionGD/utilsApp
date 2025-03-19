@@ -1,5 +1,13 @@
 import { dirname, join, parse } from 'path'
-import { existsSync, mkdirSync, readdirSync, renameSync, statSync } from 'fs'
+import {
+    existsSync,
+    mkdirSync,
+    readdirSync,
+    readFileSync,
+    renameSync,
+    statSync,
+    writeFile
+} from 'fs'
 import { dialog } from 'electron'
 import { forEachDir, getFile } from './file'
 // import sharp from 'sharp'
@@ -8,6 +16,8 @@ const sharp = require('sharp')
 interface PressImageOptType {
     scale?: number
     quality?: number
+    /** 后缀 */
+    targetExt?: string
 }
 
 interface pressImageListType {
@@ -18,7 +28,12 @@ interface pressImageListType {
     /** 压缩配置 */
     opt: PressImageOptType
 }
-const supportedFormats = ['.jpg', '.jpeg', '.png', '.webp', '.tiff', '.gif', '.svg']
+const supportedFormats = ['.jpg', '.jpeg', '.png', '.webp', '.tiff', '.gif', '.svg'] as const
+type supportedFormatsType = (typeof supportedFormats)[number]
+
+function isSupportedImage(type: string): type is supportedFormatsType {
+    return supportedFormats.includes(type as supportedFormatsType)
+}
 
 /** 压缩单张图片 */
 export async function pressSingleImg(
@@ -26,9 +41,9 @@ export async function pressSingleImg(
     output: string,
     opt: PressImageOptType
 ): Promise<any> {
-    const { scale, quality } = opt
+    const { scale, quality, targetExt } = opt
     const { ext } = parse(input)
-    if (!supportedFormats.includes(ext)) {
+    if (!isSupportedImage(ext)) {
         return
     }
 
@@ -40,39 +55,42 @@ export async function pressSingleImg(
     const newWidth = (width || 0) * (scale || 1)
     const newHeight = (height || 0) * (scale || 1)
 
-    let outPath = output
+    const outputDir = dirname(output)
+    let outputPath = output
+    // 替换后缀
+    if (targetExt) {
+        const { ext, base } = parse(output)
+        outputPath = join(outputDir, base.replace(ext, targetExt))
+    }
 
-    if (input === output) {
-        const { name, ext, dir } = parse(output)
-        outPath = join(dir, `${name}.temp${ext}`)
-    } else {
+    if (input !== outputPath) {
         // 创建输出目录（如果不存在）
-        const outputDir = dirname(output)
         if (!existsSync(outputDir)) {
             mkdirSync(outputDir, { recursive: true })
         }
     }
 
+    const buffer = readFileSync(input)
+
     // 压缩
     const res = await new Promise((resolve, reject) => {
-        sharp(input)
-            .resize({
-                width: newWidth,
-                height: newHeight
+        sharp(buffer)
+            .resize(newWidth, newHeight) // 调整图像大小
+            .toFormat(format, { quality }) // 转换为 JPEG 格式，设置质量
+            .toBuffer()
+            .then((outputBuffer) => {
+                writeFile(outputPath, outputBuffer, (err) => {
+                    if (err) {
+                        reject(err)
+                    } else {
+                        resolve(outputPath)
+                    }
+                })
             })
-            [format]({ quality })
-            .toFile(outPath, (err, info) => {
-                if (err) {
-                    reject(err)
-                } else {
-                    resolve(info)
-                }
+            .catch((err) => {
+                reject(err)
             })
     })
-
-    if (!(res instanceof Error)) {
-        renameSync(outPath, output)
-    }
 
     return res
 }
@@ -167,12 +185,12 @@ export async function getDirImageBuffer(dir: string) {
         if (stat.isFile()) {
             const { ext } = parse(dir)
 
-            return supportedFormats.includes(ext) ? getImageBuffer([dir]) : []
+            return isSupportedImage(ext) ? getImageBuffer([dir]) : []
         }
         return []
     }
 
-    const pathList: string[] = forEachDir(dir, undefined, supportedFormats)
+    const pathList: string[] = forEachDir(dir, undefined, Array.from(supportedFormats))
     console.log('🚀 ~ pathList:', pathList)
 
     return getImageBuffer(pathList)

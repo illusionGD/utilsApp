@@ -16,6 +16,10 @@ interface imageListItemType {
 type PropsType = {
     defaultList?: imageListItemType[]
     onChange?: (list: imageListItemType[]) => void
+    styleSheet?: {
+        width?: string
+        height?: string
+    }
 }
 
 function SelectImageList(props: PropsType) {
@@ -88,7 +92,7 @@ function SelectImageList(props: PropsType) {
             <div
                 className="scroll-min"
                 style={{
-                    height: '500px',
+                    height: props.styleSheet?.height || '500px',
                     overflowY: 'auto'
                 }}
             >

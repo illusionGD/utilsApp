@@ -4,11 +4,15 @@ import { clamp, formatFileSize } from '@renderer/utils'
 import { IMG_EXT_ENUM, IMG_EXT_LIST } from '@renderer/constants'
 
 function formatPressImageParam(params: PressImageParamsType) {
-    const { inputPath, outputPath, scale, quality } = params
+    const { inputPath, outputPath, scale, quality, targetExt } = params
     return {
         inputPath,
         outputPath,
-        opt: { scale: clamp(scale || 100, 1, 100), quality: clamp(quality || 100, 1, 100) }
+        opt: {
+            scale: clamp(scale || 1, 0.1, 1),
+            quality: clamp(quality || 100, 1, 100),
+            targetExt: targetExt ? '.' + targetExt : ''
+        }
     }
 }
 
@@ -20,7 +24,7 @@ export async function pressDirImageApi(params: PressImageParamsType) {
 
     const res = await window.api.pressDirImage(inputPath, outputPath, opt)
 
-    checkError(res)
+    checkError<any>(res)
 
     return res
 }
@@ -31,16 +35,15 @@ export async function pressDirImageApi(params: PressImageParamsType) {
  * @param dirPath
  */
 export async function batchPressImageToDirApi(list: PressImageParamsType[], dirPath: string) {
-    const res = await window.api.batchPressImageToDir(
-        list.map((item) => {
-            const { inputPath, opt } = formatPressImageParam(item)
-            return {
-                input: inputPath,
-                opt
-            }
-        }),
-        dirPath
-    )
+    const arr = list.map((item) => {
+        const { inputPath, opt } = formatPressImageParam(item)
+        return {
+            input: inputPath,
+            opt
+        }
+    })
+
+    const res = await window.api.batchPressImageToDir(arr, dirPath)
     checkError(res)
     return res
 }
@@ -91,3 +94,16 @@ export async function selectImageFiles() {
         return null
     })
 }
+
+// export async function batchImageToOtherExtApi(
+//     list: PressImageParamsType[],
+//     targetExt: IMG_EXT_ENUM
+// ) {
+//     const params = list.map((item) => {
+//         return {
+//             ...item,
+//             targetExt: '.' + targetExt
+//         }
+//     })
+//     return await window.api.batchImageToOtherExt(params as any)
+// }
