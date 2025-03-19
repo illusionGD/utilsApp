@@ -1,16 +1,6 @@
 import { dirname, join, parse } from 'path'
-import {
-    existsSync,
-    mkdirSync,
-    readdirSync,
-    readFileSync,
-    renameSync,
-    statSync,
-    writeFile
-} from 'fs'
-import { dialog } from 'electron'
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFile } from 'fs'
 import { forEachDir, getFile } from './file'
-// import sharp from 'sharp'
 const sharp = require('sharp')
 
 interface PressImageOptType {
@@ -49,7 +39,7 @@ export async function pressSingleImg(
 
     const { width, height, format } = await sharp(input).metadata()
     if (!format) {
-        return
+        return ''
     }
     // 缩放
     const newWidth = (width || 0) * (scale || 1)
@@ -104,8 +94,8 @@ export async function batchPressImage(list: pressImageListType[]) {
     let failCount = 0
     let successCount = 0
 
-    resList.forEach(({ code }) => {
-        if (code !== '100') {
+    resList.forEach((item) => {
+        if (typeof item !== 'string') {
             failCount += 1
         } else {
             successCount += 1

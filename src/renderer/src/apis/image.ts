@@ -1,7 +1,7 @@
 import { PressImageParamsType } from '@renderer/types'
 import { checkError, getFileOrDirPathApi } from '.'
-import { clamp, formatFileSize } from '@renderer/utils'
-import { IMG_EXT_ENUM, IMG_EXT_LIST } from '@renderer/constants'
+import { clamp } from '@renderer/utils'
+import { IMG_EXT_LIST } from '@renderer/constants'
 
 function formatPressImageParam(params: PressImageParamsType) {
     const { inputPath, outputPath, scale, quality, targetExt } = params
@@ -94,16 +94,3 @@ export async function selectImageFiles() {
         return null
     })
 }
-
-// export async function batchImageToOtherExtApi(
-//     list: PressImageParamsType[],
-//     targetExt: IMG_EXT_ENUM
-// ) {
-//     const params = list.map((item) => {
-//         return {
-//             ...item,
-//             targetExt: '.' + targetExt
-//         }
-//     })
-//     return await window.api.batchImageToOtherExt(params as any)
-// }
