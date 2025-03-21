@@ -50,3 +50,12 @@ export function listenImgLoad(url: string): Promise<HTMLImageElement> {
         }
     })
 }
+
+export function isJSON(str: string) {
+    try {
+        JSON.parse(str)
+        return true
+    } catch (error) {
+        return false
+    }
+}

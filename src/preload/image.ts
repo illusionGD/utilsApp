@@ -65,9 +65,10 @@ export async function pressSingleImg(
     // 压缩
     const res = await new Promise((resolve, reject) => {
         const { ext } = parse(outputPath)
+        const format = ext.replace('.', '')
         sharp(buffer)
             .resize(newWidth, newHeight) // 调整图像大小
-            .toFormat(ext.replace('.', ''), { quality }) // 转换为 JPEG 格式，设置质量
+            .toFormat(format === 'jpg' ? 'jpeg' : format, { quality }) // 转换为 JPEG 格式，设置质量
             .toBuffer()
             .then((outputBuffer) => {
                 writeFile(outputPath, outputBuffer, (err) => {

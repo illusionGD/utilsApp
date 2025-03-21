@@ -5,9 +5,10 @@ import Clipboard from 'clipboard'
 type Props = {
     language: string
     code: string
+    height?: string
 }
 
-function CodeBlock({ language, code }: Props) {
+function CodeBlock({ language, code, height }: Props) {
     const preRef = useRef<HTMLPreElement>(null)
     const [copied, setCopied] = useState(false)
 
@@ -34,8 +35,12 @@ function CodeBlock({ language, code }: Props) {
     }, [code, language]) // language 变化时也要重新渲染高亮
 
     return (
-        <div className="code-block" style={{ position: 'relative', marginTop: 8 }}>
-            <pre ref={preRef} className="hljs"></pre>
+        <div className="code-block" style={{ position: 'relative' }}>
+            <pre
+                ref={preRef}
+                className="hljs"
+                style={{ minHeight: '40px', height, margin: '0' }}
+            ></pre>
             <button
                 id={`${language}copy_btn`}
                 style={{ position: 'absolute', top: 4, right: 4, lineHeight: '14px' }}

@@ -1,8 +1,11 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, createBrowserRouter } from 'react-router'
-import { FileImageOutlined, FileOutlined, FontSizeOutlined } from '@ant-design/icons'
-import FileName from '@renderer/views/utils/fileName'
-import BitMapFont from '@renderer/views/utils/bitMapFont'
+import {
+    CompressOutlined,
+    FileImageOutlined,
+    FileOutlined,
+    FontSizeOutlined
+} from '@ant-design/icons'
 export interface RouteType {
     path: string
     element: any
@@ -17,6 +20,9 @@ const Home = lazy(() => import('@renderer/views'))
 const Utils = lazy(() => import('@renderer/views/utils/utilsIndex'))
 const PressImage = lazy(() => import('@renderer/views/utils/pressImage'))
 const Sprites = lazy(() => import('@renderer/views/utils/sprites'))
+const FileName = lazy(() => import('@renderer/views/utils/fileName'))
+const BitMapFont = lazy(() => import('@renderer/views/utils/bitMapFont'))
+const ToTsInterface = lazy(() => import('@renderer/views/utils/toTsInterface'))
 
 export const routers: RouteType[] = [
     {
@@ -93,6 +99,23 @@ export const routers: RouteType[] = [
                         element: (
                             <Suspense>
                                 <BitMapFont></BitMapFont>
+                            </Suspense>
+                        )
+                    }
+                ]
+            },
+            {
+                path: '/utils/other',
+                name: '其他',
+                icon: <CompressOutlined />,
+                element: <Suspense></Suspense>,
+                children: [
+                    {
+                        path: '/utils/other/toTsInterface',
+                        name: '转ts类型',
+                        element: (
+                            <Suspense>
+                                <ToTsInterface></ToTsInterface>
                             </Suspense>
                         )
                     }
