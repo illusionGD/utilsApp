@@ -51,7 +51,6 @@ function initHandleEvent() {
                     message: 'success'
                 }
             } catch (err: any) {
-                console.log('🚀 ~ err:', err)
                 return {
                     code: '500',
                     data: err,

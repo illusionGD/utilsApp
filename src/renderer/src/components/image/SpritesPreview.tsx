@@ -50,7 +50,11 @@ function SpritesPreview(props: Props) {
                     height: '100%'
                 }}
             >
-                <div>
+                <div
+                    style={{
+                        marginBottom: '10px'
+                    }}
+                >
                     <span>速度(s)：</span>
                     <InputNumber
                         defaultValue={duration}

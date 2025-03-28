@@ -16,13 +16,11 @@ function Index({}: Props) {
     function initCardList() {
         return routers
             .filter((item) => item.path !== '/')
-            .map(({ name, path, description }) => {
+            .map(({ name, path, description }, index) => {
                 return (
-                    <>
-                        <Card hoverable style={{ width: 240 }} onClick={() => toPage(path)}>
-                            <Meta title={name} description={description} />
-                        </Card>
-                    </>
+                    <Card key={index} hoverable style={{ width: 240 }} onClick={() => toPage(path)}>
+                        <Meta title={name} description={description} />
+                    </Card>
                 )
             })
     }

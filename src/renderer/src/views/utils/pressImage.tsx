@@ -181,7 +181,7 @@ const PressImage = (props: Props) => {
         <div>
             <Form
                 form={form}
-                name="basic"
+                name="pressImageForm"
                 labelCol={{ span: 2 }}
                 wrapperCol={{ span: 16 }}
                 initialValues={pressPressImageForm}
@@ -201,7 +201,6 @@ const PressImage = (props: Props) => {
                 </Form.Item>
                 <Form.Item<FieldType> label="格式" name="targetExt" valuePropName="checked">
                     <Select
-                        defaultValue={pressPressImageForm.targetExt}
                         style={{ width: 120 }}
                         options={extList}
                     />

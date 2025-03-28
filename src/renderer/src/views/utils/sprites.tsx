@@ -23,7 +23,7 @@ type FieldType = {
     isSingle: boolean
     isOpenOutput: boolean
     outputPath: string
-    name: string
+    fileName: string
     canvasWith: number
     canvasHeight: number
     adapterType: FillImageTypeEnum
@@ -37,7 +37,7 @@ function Sprites({}: Props) {
         isOpenOutput: true,
         isSingle: true,
         outputPath: '',
-        name: 'sprites',
+        fileName: 'sprites',
         canvasWith: 200,
         canvasHeight: 200,
         adapterType: FillImageTypeEnum.ROW
@@ -176,15 +176,11 @@ function Sprites({}: Props) {
         if (canvasRef.current && canvasRef.current.outputBlob) {
             const blob = await canvasRef.current?.outputBlob()
             if (blob) {
-                console.log('🚀 ~ blob:', blob)
                 const arr = await blob.arrayBuffer()
-                console.log(
-                    "🚀 ~ `${spritesForm.outputPath + '\\'}${spritesForm.name}.png`:",
-                    `${spritesForm.outputPath + '\\'}${spritesForm.name}.png`
-                )
+    
                 const res = await window.api.bufferToImg(
                     arr,
-                    `${spritesForm.outputPath + '\\'}${spritesForm.name}.png`
+                    `${spritesForm.outputPath + '\\'}${spritesForm.fileName}.png`
                 )
                 checkError(res)
                 isSucCode(res.code) && message.success('成功')
@@ -200,7 +196,7 @@ function Sprites({}: Props) {
                 <Card style={cardStyle}>
                     <Form
                         form={form}
-                        name="basic"
+                        name="spritesForm"
                         labelCol={{ span: 4 }}
                         wrapperCol={{ span: 16 }}
                         initialValues={spritesForm}
@@ -213,13 +209,12 @@ function Sprites({}: Props) {
                         </Form.Item> */}
                         <Form.Item<FieldType>
                             label="精灵图名称"
-                            name="name"
+                            name="fileName"
                             rules={[{ required: true, message: '请输入精灵图名称' }]}
                         >
                             <Input
                                 allowClear
                                 placeholder="请输入精灵图名称"
-                                defaultValue={spritesForm.name}
                             />
                         </Form.Item>
                         {renderSingleItem()}
@@ -232,7 +227,6 @@ function Sprites({}: Props) {
                         </Form.Item>
                         <Form.Item<FieldType> label="适配模式" name="adapterType">
                             <Select
-                                defaultValue={spritesForm.adapterType}
                                 style={{ width: 120 }}
                                 options={adapterList}
                             />
@@ -286,7 +280,7 @@ function Sprites({}: Props) {
                     imgUrl={previewData.imageUrl}
                     duration={previewData.duration}
                     direction={spritesForm.adapterType}
-                    cssName={spritesForm.name}
+                    cssName={spritesForm.fileName}
                 ></SpritesPreview>
             </Card>
         </div>

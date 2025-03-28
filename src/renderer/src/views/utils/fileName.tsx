@@ -36,7 +36,6 @@ function FileName({}: Props) {
     ]
     const renderSelect = (type: 'prefixType' | 'suffixType') => {
         const onSelect = (val) => {
-            console.log('🚀 ~ val:', val)
             setForm((draft) => {
                 draft[type] = val
             })
@@ -80,7 +79,7 @@ function FileName({}: Props) {
         <div>
             <Form
                 form={form}
-                name="basic"
+                name="fileNameForm"
                 labelCol={{ span: 2 }}
                 wrapperCol={{ span: 10 }}
                 initialValues={fileNameForm}

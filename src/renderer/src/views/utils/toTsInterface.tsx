@@ -17,12 +17,9 @@ function ToTsInterface({}: Props) {
             return
         }
         try {
-            console.log('🚀 ~ jsCode:', jsCode)
             const obj = JSON5.parse(jsCode)
             const str = toTsInterface(obj)
             setTsCode(() => str)
-            console.log('🚀 ~ str:', str)
-            console.log('🚀 ~ obj:', obj)
         } catch (error) {
             message.error('请正确输入js对象')
         }

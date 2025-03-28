@@ -19,7 +19,6 @@ const Image = (props: Props) => {
         )
     })
     function toPage(path?: string) {
-        console.log('🚀 ~ path:', path)
         path && nav(path)
     }
 

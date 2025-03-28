@@ -15,7 +15,6 @@ export async function getFile(path: string): Promise<{
     return new Promise((resolve, reject) => {
         readFile(path, (err, data) => {
             if (err) {
-                console.log('🚀 ~ err:', err)
                 reject(null)
             } else {
                 const { ext, base } = parse(path)

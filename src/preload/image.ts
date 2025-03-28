@@ -183,7 +183,6 @@ export async function getDirImageBuffer(dir: string) {
     }
 
     const pathList: string[] = forEachDir(dir, undefined, Array.from(supportedFormats))
-    console.log('🚀 ~ pathList:', pathList)
 
     return getImageBuffer(pathList)
 }
